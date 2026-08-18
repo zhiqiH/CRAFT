@@ -115,9 +115,6 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--structures", help="Comma-separated structure indices, e.g. 0,1,2")
     parser.add_argument("--runs", help="Comma-separated run indices, e.g. 1,2,3")
-    parser.add_argument("--rounds", type=int, help="Number of debate rounds (default 20)")
-    parser.add_argument("--model", help="Model for all 7 agents (default: gpt-4o-mini)")
-    parser.add_argument("--temperature", type=float, help="Sampling temperature")
     parser.add_argument("--judges", action="store_true", help="Also run the paper's SG/MM/PS judges")
     parser.add_argument("--mock", action="store_true", help="Dry run with a deterministic mock LLM")
     parser.add_argument("--name", help="Explicit experiment name (overrides YYYYMMDDHHMM-<model>)")
@@ -131,12 +128,6 @@ def main() -> int:
         config_path = PROJECT_ROOT / config_path
     config = json.loads(config_path.read_text(encoding="utf-8"))
 
-    if args.model:
-        config["model"] = args.model
-    if args.temperature is not None:
-        config["temperature"] = args.temperature
-    if args.rounds is not None:
-        config["debate"]["max_rounds"] = args.rounds
     if args.structures:
         config["benchmark"]["structures"] = parse_list_arg(args.structures)
     if args.runs:
@@ -235,7 +226,7 @@ def main() -> int:
     write_json(trajectory_path, experiment)
     summary = build_summary(experiment)
     write_json(summary_path, summary)
-    plot_score_curves(summary, plot_path)
+    plot_score_curves(summary, plot_path, ymax=(config.get("plot") or {}).get("ymax"))
 
     print("\nWrote:")
     print(f"  trajectory: {trajectory_path}")

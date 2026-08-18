@@ -13,7 +13,7 @@
     "runs": [1]
   },
   "debate": {
-    "max_rounds": 30,
+    "max_rounds": 25,
     "terminate_early": false,
     "start_from_empty": true,
     "oracle": {
@@ -54,6 +54,9 @@
   "output": {
     "trajectories_dir": "trajectories",
     "results_dir": "results"
+  },
+  "plot": {
+    "ymax": 0.8
   },
   "seed": 42
 }

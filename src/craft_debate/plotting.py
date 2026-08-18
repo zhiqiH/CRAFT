@@ -6,7 +6,12 @@ from pathlib import Path
 from typing import Any, Dict
 
 
-def plot_score_curves(summary: Dict[str, Any], output_png: Path, dpi: int = 150) -> Path:
+def plot_score_curves(
+    summary: Dict[str, Any],
+    output_png: Path,
+    dpi: int = 150,
+    ymax: float = None,
+) -> Path:
     import matplotlib
 
     matplotlib.use("Agg")
@@ -15,6 +20,17 @@ def plot_score_curves(summary: Dict[str, Any], output_png: Path, dpi: int = 150)
     per_game = summary["per_game"]
     max_rounds = summary["max_rounds"]
     rounds = list(range(1, max_rounds + 1))
+
+    metric_keys = ["overall_progress", "completion_percentage", "iou_score", "position_accuracy"]
+    data_max = max(
+        (row[key] for row in summary["mean_curve"] for key in metric_keys),
+        default=0.0,
+    )
+    if ymax is None:
+        top = 1.04
+    else:
+        # Zoom to the requested cap, but never clip data above it.
+        top = max(float(ymax), min(1.04, 1.02 * data_max + 0.02))
 
     fig, (ax_main, ax_metrics) = plt.subplots(
         2, 1, figsize=(9, 7.2), sharex=True, gridspec_kw={"height_ratios": [1.15, 1.0]}
@@ -46,17 +62,18 @@ def plot_score_curves(summary: Dict[str, Any], output_png: Path, dpi: int = 150)
         label="mean overall progress",
         zorder=2,
     )
-    ax_main.axhline(0.95, color="#b91c1c", linestyle="--", linewidth=0.9, alpha=0.7)
-    ax_main.text(
-        max_rounds + 0.25,
-        0.95,
-        "completion threshold (0.95)",
-        va="center",
-        fontsize=8,
-        color="#b91c1c",
-    )
+    if 0.95 < top:
+        ax_main.axhline(0.95, color="#b91c1c", linestyle="--", linewidth=0.9, alpha=0.7)
+        ax_main.text(
+            max_rounds + 0.25,
+            0.95,
+            "completion threshold (0.95)",
+            va="center",
+            fontsize=8,
+            color="#b91c1c",
+        )
     ax_main.set_ylabel("overall progress")
-    ax_main.set_ylim(-0.02, 1.04)
+    ax_main.set_ylim(-0.02, top)
     ax_main.set_xlim(0.5, max_rounds + 2.5)
     ax_main.grid(True, axis="y", linewidth=0.5, alpha=0.3)
     ax_main.legend(loc="lower right", fontsize=8, frameon=False)
@@ -73,7 +90,7 @@ def plot_score_curves(summary: Dict[str, Any], output_png: Path, dpi: int = 150)
         ax_metrics.plot(rounds, values, color=color, linewidth=1.6, label=label)
     ax_metrics.set_xlabel("round")
     ax_metrics.set_ylabel("metric value (mean)")
-    ax_metrics.set_ylim(-0.02, 1.04)
+    ax_metrics.set_ylim(-0.02, top)
     ax_metrics.set_xticks(rounds)
     ax_metrics.grid(True, axis="y", linewidth=0.5, alpha=0.3)
     ax_metrics.legend(loc="lower right", fontsize=8, frameon=False, ncol=2)

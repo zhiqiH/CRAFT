@@ -2,7 +2,7 @@
 
 一个把 [CRAFT](https://arxiv.org/abs/2603.25268)（arXiv:2603.25268v2）benchmark 与自定义
 **7-agent 多轮 Multi-Agent Debate 拓扑（Debate）** 结合的实验框架。每轮 7 个子 agent 都使用
-`gpt-4o-mini`，共 20 轮，并按论文方法评估任务进度，最后把 20 轮的分数曲线画出来。
+`gpt-4o-mini`，固定 25 轮，并按论文方法评估任务进度，最后把 25 轮的分数曲线画出来。
 
 ## Debate 拓扑
 
@@ -16,7 +16,7 @@
 3. **Judge（J1）**：汇总 proposers 的回答和 critics 的批判，按论文 Builder 的动作格式综合出一个
    最终动作（PLACE / REMOVE / CLARIFY），该动作执行后的任务进度就是本轮分数。
 
-下一轮的三个 proposers 会同时看到题目和上一轮 Judge 的综合回答，如此循环 20 轮。
+下一轮的三个 proposers 会同时看到题目和上一轮 Judge 的综合回答，如此循环 25 轮。
 
 ## 哪一层最值得升级模型
 
@@ -61,11 +61,14 @@ cp .secret/openai_api_key.example .secret/openai_api_key   # 然后把文件里�
 # 3. 检查环境
 python3 scripts/check_setup.py
 
-# 4. 跑一次实验（默认 1 个结构 × 1 run × 20 轮）
+# 4. 跑一次实验（默认 1 个结构 × 1 run × 25 轮）
 python3 scripts/run_debate.py
 
 # 5. 重画某个实验的分数曲线
 python3 scripts/visualize_scores.py --latest
+
+# 纵轴默认上限 0.8（更容易看出各轮差距）；想改可用 --ymax，恢复全量用 1.0
+python3 scripts/visualize_scores.py --latest --ymax 0.7
 ```
 
 没有 key 时也可以先用 mock 模型验证整条链路：
@@ -80,49 +83,17 @@ python3 scripts/run_debate.py --mock
 python3 scripts/run_debate.py \
   --config config/debate_config.json \
   --structures 0,1,2 \
-  --runs 1,2,3 \
-  --rounds 20 \
-  --model gpt-4o-mini
+  --runs 1,2,3
 ```
 
 `--structures` 是所有 20 个结构的索引（`0-19`，7 simple / 8 medium / 5 complex）。
-`--runs` 对应论文里的多 run 设置；每个 structure-run 组合都会完整跑 20 轮。
+`--runs` 对应论文里的多 run 设置；每个 structure-run 组合都会完整跑 25 轮。
 
-## 分层指定模型（升级 proposers 到 DeepSeek Flash）
+## 已冻结的实验设置
 
-配置里 `model` 是全局默认值，`stages` 可以按 `proposers / critics / judge / judges` 分层覆盖。
-例如只把 proposers 升级为 `deepseek-v4-flash`（DeepSeek 官方 OpenAI 兼容接口）：
-
-```json
-"stages": {
-  "proposers": {
-    "model": "deepseek-v4-flash",
-    "provider": "deepseek",
-    "api_key": "deepseek_api_key",
-    "temperature": 0.7,
-    "max_tokens": 2000,
-    "thinking": "disabled"
-  }
-}
-```
-
-仓库里已经有一份现成配置，直接运行：
-
-```bash
-# DeepSeek key（在 platform.deepseek.com 申请）
-cp .secret/deepseek_api_key.example .secret/deepseek_api_key   # 替换成真实 key
-# 或者： export DEEPSEEK_API_KEY=sk-...
-
-python3 scripts/run_debate.py --config config/debate_config_deepseek_proposers.json
-```
-
-关于 DeepSeek V4-Flash（官方文档，base_url `https://api.deepseek.com`，模型 `deepseek-v4-flash`）：
-
-- 1M 上下文、384K 最大输出，OpenAI Chat Completions 兼容；
-- 默认开启 thinking 模式，此时 `temperature` 不生效且链式思考按输出计费；本框架的提示词已经自带
-  `<think>` 块，所以示例配置用 `thinking: "disabled"` 保持论文的 temperature=0.7 并省 token；
-- 想开思考模式把 `"thinking"` 改成 `"enabled"` 即可（V4-Flash 离线价约 $0.22/1M 输入、
-  $0.66/1M 输出，一个结构 × 20 轮 × 3 个 proposers 通常只需几美分）。
+从当前版本起冻结为：**25 轮、7 个 agent 全部使用 `gpt-4o-mini`、拓扑保持 `3 → 3 → 1` 不变**。
+模型和轮数由 [config/debate_config.json](config/debate_config.json) 控制（`debate.max_rounds=25`），
+运行脚本不再接受 `--rounds / --model / --temperature` 命令行覆盖；如需换模型或轮数，直接改该配置文件。
 
 ## 实验命名与产物
 
@@ -131,12 +102,8 @@ python3 scripts/run_debate.py --config config/debate_config_deepseek_proposers.j
 ```text
 trajectories/202608172330-gpt-4o-mini.json   # 完整轨迹（每轮 7 个 agent 的 prompt/回答、动作、分数）
 results/202608172330-gpt-4o-mini.json        # 汇总（每轮分数曲线、最终进度等）
-results/202608172330-gpt-4o-mini.png         # 20 轮分数曲线可视化
+results/202608172330-gpt-4o-mini.png         # 25 轮分数曲线可视化
 ```
-
-分层混合模型时，模型名部分会展开成 `模型-层名+...`，例如
-`202608172330-deepseek-v4-flash-proposers+gpt-4o-mini-critics+gpt-4o-mini-judge`，
-完整分层配置仍然记录在 trajectory 的 `experiment.config` 里。
 
 ## 复现论文的关键设置
 
@@ -144,5 +111,5 @@ results/202608172330-gpt-4o-mini.png         # 20 轮分数曲线可视化
 - 引擎：3×3 网格、最多 3 层、5 色、small/large domino 的物理校验，与官方实现一致。
 - Oracle：每轮枚举“朝目标前进且物理可执行”的正确动作，给 Judge 最多 5 个候选（论文主实验设置）。
 - 分数：IoU、距离（1-归一化编辑距离）、完成率、位置准确率，`overall_progress` 为前三者平均。
-- 采样：API 模型 temperature=0.7（论文原设置）；20 轮；对话超过 50 条时截断到最近 40 条。
+- 采样：API 模型 temperature=0.7（论文原设置）；固定 25 轮；对话超过 50 条时截断到最近 40 条。
 - 可选：论文的 SG / MM / PS LLM 评判器（`config` 里 `judges.enabled` 打开，会显著增加调用量）。

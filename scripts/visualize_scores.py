@@ -26,6 +26,11 @@ def main() -> int:
         "--trajectories-dir", default="trajectories", help="Directory with trajectory JSONs"
     )
     parser.add_argument("--results-dir", default="results", help="Directory for summary/plot")
+    parser.add_argument(
+        "--ymax",
+        type=float,
+        help="Y-axis upper limit (default: 0.8; use 1.0 to restore the full range)",
+    )
     args = parser.parse_args()
 
     trajectories_dir = PROJECT_ROOT / args.trajectories_dir
@@ -53,8 +58,12 @@ def main() -> int:
         print(f"Nothing found for experiment '{name}' in results/ or trajectories/.")
         return 1
 
+    if args.ymax is not None:
+        ymax = args.ymax
+    else:
+        ymax = (summary.get("experiment", {}).get("config", {}).get("plot") or {}).get("ymax", 0.8)
     output = results_dir / f"{name}.png"
-    plot_score_curves(summary, output)
+    plot_score_curves(summary, output, ymax=ymax)
     print(f"Plot written: {output}")
     return 0
 
