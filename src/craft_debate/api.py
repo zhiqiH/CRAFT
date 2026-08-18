@@ -1,0 +1,157 @@
+"""OpenAI API client (async) plus a deterministic mock provider for dry runs."""
+
+from __future__ import annotations
+
+import asyncio
+import os
+import random
+import time
+from pathlib import Path
+from typing import Any, Dict, Optional
+
+
+def load_api_key(project_root: Path) -> Optional[str]:
+    """Key precedence: OPENAI_API_KEY env var, then .secret/openai_api_key file."""
+    env_key = os.getenv("OPENAI_API_KEY", "").strip()
+    if env_key:
+        return env_key
+    key_file = project_root / ".secret" / "openai_api_key"
+    if key_file.is_file():
+        for line in key_file.read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            return line
+    return None
+
+
+class LLMClient:
+    """Thin async wrapper over OpenAI Chat Completions with retry/backoff."""
+
+    def __init__(
+        self,
+        *,
+        model: str,
+        temperature: float,
+        max_completion_tokens: int,
+        api_key: str,
+        timeout_seconds: float = 120.0,
+        max_retries: int = 6,
+        backoff_seconds: float = 2.0,
+    ) -> None:
+        self.model = model
+        self.temperature = temperature
+        self.max_completion_tokens = max_completion_tokens
+        self.backoff_seconds = backoff_seconds
+        self.max_retries = max_retries
+        self._client = None
+        self._client_kwargs = {
+            "api_key": api_key,
+            "timeout": timeout_seconds,
+            "max_retries": 0,
+        }
+
+    async def _get_client(self):
+        if self._client is None:
+            # Created lazily inside the event loop so the connection pool is loop-local.
+            from openai import AsyncOpenAI
+
+            self._client = AsyncOpenAI(**self._client_kwargs)
+        return self._client
+
+    async def complete(
+        self, system: str, user: str, meta: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
+        last_error: Optional[Exception] = None
+        for attempt in range(self.max_retries + 1):
+            try:
+                started = time.monotonic()
+                client = await self._get_client()
+                response = await client.chat.completions.create(
+                    model=self.model,
+                    temperature=self.temperature,
+                    max_completion_tokens=self.max_completion_tokens,
+                    messages=[
+                        {"role": "system", "content": system},
+                        {"role": "user", "content": user},
+                    ],
+                )
+                content = response.choices[0].message.content or ""
+                usage = response.usage
+                return {
+                    "content": content,
+                    "model": self.model,
+                    "latency_seconds": round(time.monotonic() - started, 3),
+                    "usage": {
+                        "prompt_tokens": getattr(usage, "prompt_tokens", None),
+                        "completion_tokens": getattr(usage, "completion_tokens", None),
+                        "total_tokens": getattr(usage, "total_tokens", None),
+                    },
+                    "attempts": attempt + 1,
+                }
+            except Exception as exc:  # noqa: BLE001 - retried below, then re-raised
+                last_error = exc
+                retriable = any(
+                    marker in type(exc).__name__.lower()
+                    for marker in ("ratelimit", "apiconnection", "timeout", "server")
+                ) or getattr(exc, "status_code", None) in (429, 500, 502, 503, 504)
+                if not retriable or attempt >= self.max_retries:
+                    break
+                delay = self.backoff_seconds * (2**attempt) + random.uniform(0, 0.5)
+                await asyncio.sleep(delay)
+        raise RuntimeError(
+            f"LLM call failed after {self.max_retries + 1} attempts: {last_error}"
+        ) from last_error
+
+
+class MockLLM:
+    """Deterministic provider used by `--mock` to verify the pipeline offline."""
+
+    def __init__(self, model: str) -> None:
+        self.model = model
+
+    async def complete(
+        self, system: str, user: str, meta: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
+        meta = meta or {}
+        kind = meta.get("kind", "agent")
+        if kind == "proposer":
+            content = (
+                "<think>Mock proposer: check my private wall and pick the next missing block.</think>\n"
+                "<message>Mock proposer: place the next block needed on my wall, matching my target view.</message>"
+            )
+        elif kind == "critic":
+            content = (
+                "<critique>Mock critic: the proposers' messages are consistent enough to act on.</critique>\n"
+                "<message>Mock critic: endorse the most concrete proposer instruction.</message>"
+            )
+        elif kind == "judge":
+            oracle_moves = meta.get("oracle_moves") or []
+            if oracle_moves:
+                move = oracle_moves[0]
+                if move["action"] == "place":
+                    line = f"PLACE:{move['block']}:{move['position']}:{move['layer']}"
+                    if move.get("span_to"):
+                        line += f":{move['span_to']}"
+                    line += ":CONFIRM:mock-oracle move"
+                else:
+                    line = f"REMOVE:{move['position']}:{move['layer']}"
+                    if move.get("span_to"):
+                        line += f":{move['span_to']}"
+                    line += ":CONFIRM:mock-oracle move"
+                content = f"<move>{line}</move>"
+            else:
+                content = "<move>CLARIFY:board already complete (mock)</move>"
+        else:
+            content = "mock"
+        return {
+            "content": content,
+            "model": self.model,
+            "latency_seconds": 0.0,
+            "usage": {
+                "prompt_tokens": 0,
+                "completion_tokens": 0,
+                "total_tokens": 0,
+            },
+            "attempts": 1,
+        }

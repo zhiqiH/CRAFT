@@ -1,0 +1,15 @@
+# Secrets — never commit the real API key
+.secret/*
+!.secret/openai_api_key.example
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+build/
+dist/
+
+# OS / editor
+.DS_Store
