@@ -89,6 +89,24 @@ python3 scripts/run_debate.py \
 `--structures` 是所有 20 个结构的索引（`0-19`，7 simple / 8 medium / 5 complex）。
 `--runs` 对应论文里的多 run 设置；每个 structure-run 组合都会完整跑 25 轮。
 
+## 程序化生成数据集与选择
+
+```bash
+# 生成 80 个结构（默认写到 benchmark/craft-80.json，命名规则 craft-<数量>）
+python3 benchmark/generate_benchmark.py --count 80
+
+# 只保留理论天花板不低于 0.7 的结构（适合早停策略训练，避免不可达的低分结构）
+python3 benchmark/generate_benchmark.py --count 80 --out benchmark/craft-80-ceil07.json --min-ceiling 0.7
+
+# 运行时选择数据集：--benchmark 传名称（自动补 benchmark/ 与 .json）或直接传路径
+python3 scripts/run_debate.py --benchmark craft-80
+python3 scripts/run_debate.py --benchmark benchmark/craft-80.json --structures 0,1,2
+```
+
+生成器是官方 `structure_generator_v2.py` 的忠实移植（同样的层铺、domino 规则与校验），
+结构 id 形如 `craft-80-001`，`--seed` 可复现，`--min-ceiling` 用本仓库的 oracle 计算
+每个结构可达的理论上限并过滤。
+
 ## 已冻结的实验设置
 
 从当前版本起冻结为：**25 轮、7 个 agent 全部使用 `gpt-4o-mini`、拓扑保持 `3 → 3 → 1` 不变**。

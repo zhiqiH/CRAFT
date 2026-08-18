@@ -28,14 +28,19 @@ def main() -> int:
     except ImportError:
         problems.append("package 'matplotlib' is missing — run: python3 -m pip install -e .")
 
-    benchmark = PROJECT_ROOT / "benchmark" / "craft_structures_20.json"
+    benchmark = None
+    if config is not None:
+        benchmark_path = Path(config.get("benchmark", {}).get("path", "benchmark/craft_structures_20.json"))
+        benchmark = benchmark_path if benchmark_path.is_absolute() else PROJECT_ROOT / benchmark_path
+    else:
+        benchmark = PROJECT_ROOT / "benchmark" / "craft_structures_20.json"
     if not benchmark.is_file():
         problems.append(f"benchmark file missing: {benchmark}")
     else:
         try:
             data = json.loads(benchmark.read_text(encoding="utf-8"))
-            if not isinstance(data, list) or len(data) != 20:
-                problems.append(f"benchmark should contain 20 structures, found {len(data)}")
+            if not isinstance(data, list) or not data:
+                problems.append(f"benchmark should be a non-empty list, found {len(data)}")
         except json.JSONDecodeError:
             problems.append(f"benchmark file is not valid JSON: {benchmark}")
 

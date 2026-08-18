@@ -113,6 +113,10 @@ def parse_args() -> argparse.Namespace:
         default=str(PROJECT_ROOT / "config" / "debate_config.json"),
         help="Path to the JSON config (default: config/debate_config.json)",
     )
+    parser.add_argument(
+        "--benchmark",
+        help="Benchmark dataset: a name like craft-80 (resolves to benchmark/craft-80.json) or a JSON path",
+    )
     parser.add_argument("--structures", help="Comma-separated structure indices, e.g. 0,1,2")
     parser.add_argument("--runs", help="Comma-separated run indices, e.g. 1,2,3")
     parser.add_argument("--judges", action="store_true", help="Also run the paper's SG/MM/PS judges")
@@ -127,6 +131,15 @@ def main() -> int:
     if not config_path.is_absolute():
         config_path = PROJECT_ROOT / config_path
     config = json.loads(config_path.read_text(encoding="utf-8"))
+
+    if args.benchmark:
+        value = args.benchmark
+        if not value.endswith(".json"):
+            if "/" in value or "\\" in value:
+                value = f"{value}.json"
+            else:
+                value = f"benchmark/{value}.json"
+        config["benchmark"]["path"] = value
 
     if args.structures:
         config["benchmark"]["structures"] = parse_list_arg(args.structures)
