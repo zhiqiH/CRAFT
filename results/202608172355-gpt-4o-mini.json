@@ -1,0 +1,720 @@
+{
+  "experiment": {
+    "name": "202608172355-gpt-4o-mini",
+    "created_at": "2026-08-17T23:55:21",
+    "model": "gpt-4o-mini",
+    "mock": false,
+    "topology": "Debate (3 proposers -> 3 critics -> 1 judge)",
+    "paper": "CRAFT: arXiv:2603.25268v2",
+    "config": {
+      "model": "gpt-4o-mini",
+      "temperature": 0.7,
+      "max_completion_tokens": 2000,
+      "api": {
+        "timeout_seconds": 120,
+        "max_retries": 6,
+        "backoff_seconds": 2
+      },
+      "benchmark": {
+        "path": "benchmark/craft_structures_20.json",
+        "structures": [
+          0
+        ],
+        "runs": [
+          1
+        ]
+      },
+      "debate": {
+        "max_rounds": 30,
+        "terminate_early": false,
+        "start_from_empty": true,
+        "oracle": {
+          "enabled": true,
+          "n": 5
+        },
+        "history": {
+          "max_messages": 50,
+          "trim_to": 40
+        },
+        "roles": {
+          "proposers": [
+            {
+              "id": "P1",
+              "director": "D1",
+              "archetype": "cautious"
+            },
+            {
+              "id": "P2",
+              "director": "D2",
+              "archetype": "synthesizer"
+            },
+            {
+              "id": "P3",
+              "director": "D3",
+              "archetype": "skeptical"
+            }
+          ],
+          "critics": [
+            {
+              "id": "C1",
+              "focus": "spatial_grounding"
+            },
+            {
+              "id": "C2",
+              "focus": "mind_modeling"
+            },
+            {
+              "id": "C3",
+              "focus": "pragmatic_sufficiency"
+            }
+          ],
+          "judge": {
+            "id": "J1"
+          }
+        }
+      },
+      "judges": {
+        "enabled": false,
+        "model": "gpt-4o-mini",
+        "temperature": 0.0
+      },
+      "output": {
+        "trajectories_dir": "trajectories",
+        "results_dir": "results"
+      },
+      "seed": 42
+    }
+  },
+  "max_rounds": 30,
+  "per_game": [
+    {
+      "structure_id": "structure_001",
+      "structure_index": 0,
+      "run_index": 1,
+      "complexity": "medium",
+      "rounds_completed": 30,
+      "baseline_progress": 0.037037037037037035,
+      "final_progress": 0.3922245226593053,
+      "completed": false,
+      "overall_progress_by_round": [
+        0.06819645732689211,
+        0.09935587761674718,
+        0.13051529790660224,
+        0.16167471819645732,
+        0.19283413848631237,
+        0.19283413848631237,
+        0.20732689210950084,
+        0.20732689210950084,
+        0.20732689210950084,
+        0.17616747181964576,
+        0.1729928686450425,
+        0.1729928686450425,
+        0.1729928686450425,
+        0.1729928686450425,
+        0.2337244076374511,
+        0.2640901771336554,
+        0.2590396720831503,
+        0.2886839408578539,
+        0.2886839408578539,
+        0.2886839408578539,
+        0.2944559466298597,
+        0.2944559466298597,
+        0.2886839408578539,
+        0.3183282096325575,
+        0.3183282096325575,
+        0.3183282096325575,
+        0.3183282096325575,
+        0.38500951544429807,
+        0.38500951544429807,
+        0.3922245226593053
+      ],
+      "metrics_by_round": [
+        {
+          "iou_score": 0.05,
+          "distance_score": 0.09523809523809523,
+          "completion_percentage": 0.043478260869565216,
+          "position_accuracy": 0.1111111111111111,
+          "overall_progress": 0.06819645732689211,
+          "blocks_placed_correctly": 1,
+          "blocks_total_target": 23,
+          "blocks_total_current": 1,
+          "delta": 0.031159
+        },
+        {
+          "iou_score": 0.1,
+          "distance_score": 0.18181818181818177,
+          "completion_percentage": 0.08695652173913043,
+          "position_accuracy": 0.1111111111111111,
+          "overall_progress": 0.09935587761674718,
+          "blocks_placed_correctly": 2,
+          "blocks_total_target": 23,
+          "blocks_total_current": 2,
+          "delta": 0.031159
+        },
+        {
+          "iou_score": 0.15,
+          "distance_score": 0.26086956521739135,
+          "completion_percentage": 0.13043478260869565,
+          "position_accuracy": 0.1111111111111111,
+          "overall_progress": 0.13051529790660224,
+          "blocks_placed_correctly": 3,
+          "blocks_total_target": 23,
+          "blocks_total_current": 3,
+          "delta": 0.031159
+        },
+        {
+          "iou_score": 0.2,
+          "distance_score": 0.33333333333333337,
+          "completion_percentage": 0.17391304347826086,
+          "position_accuracy": 0.1111111111111111,
+          "overall_progress": 0.16167471819645732,
+          "blocks_placed_correctly": 4,
+          "blocks_total_target": 23,
+          "blocks_total_current": 4,
+          "delta": 0.031159
+        },
+        {
+          "iou_score": 0.25,
+          "distance_score": 0.4,
+          "completion_percentage": 0.21739130434782608,
+          "position_accuracy": 0.1111111111111111,
+          "overall_progress": 0.19283413848631237,
+          "blocks_placed_correctly": 5,
+          "blocks_total_target": 23,
+          "blocks_total_current": 5,
+          "delta": 0.031159
+        },
+        {
+          "iou_score": 0.25,
+          "distance_score": 0.4,
+          "completion_percentage": 0.21739130434782608,
+          "position_accuracy": 0.1111111111111111,
+          "overall_progress": 0.19283413848631237,
+          "blocks_placed_correctly": 5,
+          "blocks_total_target": 23,
+          "blocks_total_current": 5,
+          "delta": 0.0
+        },
+        {
+          "iou_score": 0.25,
+          "distance_score": 0.4,
+          "completion_percentage": 0.2608695652173913,
+          "position_accuracy": 0.1111111111111111,
+          "overall_progress": 0.20732689210950084,
+          "blocks_placed_correctly": 6,
+          "blocks_total_target": 23,
+          "blocks_total_current": 6,
+          "delta": 0.014493
+        },
+        {
+          "iou_score": 0.25,
+          "distance_score": 0.4,
+          "completion_percentage": 0.2608695652173913,
+          "position_accuracy": 0.1111111111111111,
+          "overall_progress": 0.20732689210950084,
+          "blocks_placed_correctly": 6,
+          "blocks_total_target": 23,
+          "blocks_total_current": 6,
+          "delta": 0.0
+        },
+        {
+          "iou_score": 0.25,
+          "distance_score": 0.4,
+          "completion_percentage": 0.2608695652173913,
+          "position_accuracy": 0.1111111111111111,
+          "overall_progress": 0.20732689210950084,
+          "blocks_placed_correctly": 6,
+          "blocks_total_target": 23,
+          "blocks_total_current": 6,
+          "delta": 0.0
+        },
+        {
+          "iou_score": 0.2,
+          "distance_score": 0.33333333333333337,
+          "completion_percentage": 0.21739130434782608,
+          "position_accuracy": 0.1111111111111111,
+          "overall_progress": 0.17616747181964576,
+          "blocks_placed_correctly": 5,
+          "blocks_total_target": 23,
+          "blocks_total_current": 5,
+          "delta": -0.031159
+        },
+        {
+          "iou_score": 0.19047619047619047,
+          "distance_score": 0.31999999999999995,
+          "completion_percentage": 0.21739130434782608,
+          "position_accuracy": 0.1111111111111111,
+          "overall_progress": 0.1729928686450425,
+          "blocks_placed_correctly": 5,
+          "blocks_total_target": 23,
+          "blocks_total_current": 6,
+          "delta": -0.003175
+        },
+        {
+          "iou_score": 0.19047619047619047,
+          "distance_score": 0.31999999999999995,
+          "completion_percentage": 0.21739130434782608,
+          "position_accuracy": 0.1111111111111111,
+          "overall_progress": 0.1729928686450425,
+          "blocks_placed_correctly": 5,
+          "blocks_total_target": 23,
+          "blocks_total_current": 6,
+          "delta": 0.0
+        },
+        {
+          "iou_score": 0.19047619047619047,
+          "distance_score": 0.31999999999999995,
+          "completion_percentage": 0.21739130434782608,
+          "position_accuracy": 0.1111111111111111,
+          "overall_progress": 0.1729928686450425,
+          "blocks_placed_correctly": 5,
+          "blocks_total_target": 23,
+          "blocks_total_current": 6,
+          "delta": 0.0
+        },
+        {
+          "iou_score": 0.19047619047619047,
+          "distance_score": 0.31999999999999995,
+          "completion_percentage": 0.21739130434782608,
+          "position_accuracy": 0.1111111111111111,
+          "overall_progress": 0.1729928686450425,
+          "blocks_placed_correctly": 5,
+          "blocks_total_target": 23,
+          "blocks_total_current": 7,
+          "delta": 0.0
+        },
+        {
+          "iou_score": 0.2857142857142857,
+          "distance_score": 0.4444444444444444,
+          "completion_percentage": 0.30434782608695654,
+          "position_accuracy": 0.1111111111111111,
+          "overall_progress": 0.2337244076374511,
+          "blocks_placed_correctly": 7,
+          "blocks_total_target": 23,
+          "blocks_total_current": 9,
+          "delta": 0.060732
+        },
+        {
+          "iou_score": 0.3333333333333333,
+          "distance_score": 0.5,
+          "completion_percentage": 0.34782608695652173,
+          "position_accuracy": 0.1111111111111111,
+          "overall_progress": 0.2640901771336554,
+          "blocks_placed_correctly": 8,
+          "blocks_total_target": 23,
+          "blocks_total_current": 10,
+          "delta": 0.030366
+        },
+        {
+          "iou_score": 0.3181818181818182,
+          "distance_score": 0.48275862068965514,
+          "completion_percentage": 0.34782608695652173,
+          "position_accuracy": 0.1111111111111111,
+          "overall_progress": 0.2590396720831503,
+          "blocks_placed_correctly": 8,
+          "blocks_total_target": 23,
+          "blocks_total_current": 11,
+          "delta": -0.005051
+        },
+        {
+          "iou_score": 0.36363636363636365,
+          "distance_score": 0.5333333333333333,
+          "completion_percentage": 0.391304347826087,
+          "position_accuracy": 0.1111111111111111,
+          "overall_progress": 0.2886839408578539,
+          "blocks_placed_correctly": 9,
+          "blocks_total_target": 23,
+          "blocks_total_current": 12,
+          "delta": 0.029644
+        },
+        {
+          "iou_score": 0.36363636363636365,
+          "distance_score": 0.5333333333333333,
+          "completion_percentage": 0.391304347826087,
+          "position_accuracy": 0.1111111111111111,
+          "overall_progress": 0.2886839408578539,
+          "blocks_placed_correctly": 9,
+          "blocks_total_target": 23,
+          "blocks_total_current": 12,
+          "delta": 0.0
+        },
+        {
+          "iou_score": 0.36363636363636365,
+          "distance_score": 0.5333333333333333,
+          "completion_percentage": 0.391304347826087,
+          "position_accuracy": 0.1111111111111111,
+          "overall_progress": 0.2886839408578539,
+          "blocks_placed_correctly": 9,
+          "blocks_total_target": 23,
+          "blocks_total_current": 12,
+          "delta": 0.0
+        },
+        {
+          "iou_score": 0.38095238095238093,
+          "distance_score": 0.5517241379310345,
+          "completion_percentage": 0.391304347826087,
+          "position_accuracy": 0.1111111111111111,
+          "overall_progress": 0.2944559466298597,
+          "blocks_placed_correctly": 9,
+          "blocks_total_target": 23,
+          "blocks_total_current": 11,
+          "delta": 0.005772
+        },
+        {
+          "iou_score": 0.38095238095238093,
+          "distance_score": 0.5517241379310345,
+          "completion_percentage": 0.391304347826087,
+          "position_accuracy": 0.1111111111111111,
+          "overall_progress": 0.2944559466298597,
+          "blocks_placed_correctly": 9,
+          "blocks_total_target": 23,
+          "blocks_total_current": 11,
+          "delta": 0.0
+        },
+        {
+          "iou_score": 0.36363636363636365,
+          "distance_score": 0.5333333333333333,
+          "completion_percentage": 0.391304347826087,
+          "position_accuracy": 0.1111111111111111,
+          "overall_progress": 0.2886839408578539,
+          "blocks_placed_correctly": 9,
+          "blocks_total_target": 23,
+          "blocks_total_current": 12,
+          "delta": -0.005772
+        },
+        {
+          "iou_score": 0.4090909090909091,
+          "distance_score": 0.5806451612903225,
+          "completion_percentage": 0.43478260869565216,
+          "position_accuracy": 0.1111111111111111,
+          "overall_progress": 0.3183282096325575,
+          "blocks_placed_correctly": 10,
+          "blocks_total_target": 23,
+          "blocks_total_current": 13,
+          "delta": 0.029644
+        },
+        {
+          "iou_score": 0.4090909090909091,
+          "distance_score": 0.5806451612903225,
+          "completion_percentage": 0.43478260869565216,
+          "position_accuracy": 0.1111111111111111,
+          "overall_progress": 0.3183282096325575,
+          "blocks_placed_correctly": 10,
+          "blocks_total_target": 23,
+          "blocks_total_current": 13,
+          "delta": 0.0
+        },
+        {
+          "iou_score": 0.4090909090909091,
+          "distance_score": 0.5806451612903225,
+          "completion_percentage": 0.43478260869565216,
+          "position_accuracy": 0.1111111111111111,
+          "overall_progress": 0.3183282096325575,
+          "blocks_placed_correctly": 10,
+          "blocks_total_target": 23,
+          "blocks_total_current": 13,
+          "delta": 0.0
+        },
+        {
+          "iou_score": 0.4090909090909091,
+          "distance_score": 0.5806451612903225,
+          "completion_percentage": 0.43478260869565216,
+          "position_accuracy": 0.1111111111111111,
+          "overall_progress": 0.3183282096325575,
+          "blocks_placed_correctly": 10,
+          "blocks_total_target": 23,
+          "blocks_total_current": 13,
+          "delta": 0.0
+        },
+        {
+          "iou_score": 0.45454545454545453,
+          "distance_score": 0.625,
+          "completion_percentage": 0.4782608695652174,
+          "position_accuracy": 0.2222222222222222,
+          "overall_progress": 0.38500951544429807,
+          "blocks_placed_correctly": 11,
+          "blocks_total_target": 23,
+          "blocks_total_current": 14,
+          "delta": 0.066681
+        },
+        {
+          "iou_score": 0.45454545454545453,
+          "distance_score": 0.625,
+          "completion_percentage": 0.4782608695652174,
+          "position_accuracy": 0.2222222222222222,
+          "overall_progress": 0.38500951544429807,
+          "blocks_placed_correctly": 11,
+          "blocks_total_target": 23,
+          "blocks_total_current": 14,
+          "delta": 0.0
+        },
+        {
+          "iou_score": 0.47619047619047616,
+          "distance_score": 0.6451612903225806,
+          "completion_percentage": 0.4782608695652174,
+          "position_accuracy": 0.2222222222222222,
+          "overall_progress": 0.3922245226593053,
+          "blocks_placed_correctly": 11,
+          "blocks_total_target": 23,
+          "blocks_total_current": 13,
+          "delta": 0.007215
+        }
+      ]
+    }
+  ],
+  "mean_curve": [
+    {
+      "round": 1,
+      "overall_progress": 0.06819645732689211,
+      "completion_percentage": 0.043478260869565216,
+      "iou_score": 0.05,
+      "position_accuracy": 0.1111111111111111,
+      "n_games": 1
+    },
+    {
+      "round": 2,
+      "overall_progress": 0.09935587761674718,
+      "completion_percentage": 0.08695652173913043,
+      "iou_score": 0.1,
+      "position_accuracy": 0.1111111111111111,
+      "n_games": 1
+    },
+    {
+      "round": 3,
+      "overall_progress": 0.13051529790660224,
+      "completion_percentage": 0.13043478260869565,
+      "iou_score": 0.15,
+      "position_accuracy": 0.1111111111111111,
+      "n_games": 1
+    },
+    {
+      "round": 4,
+      "overall_progress": 0.16167471819645732,
+      "completion_percentage": 0.17391304347826086,
+      "iou_score": 0.2,
+      "position_accuracy": 0.1111111111111111,
+      "n_games": 1
+    },
+    {
+      "round": 5,
+      "overall_progress": 0.19283413848631237,
+      "completion_percentage": 0.21739130434782608,
+      "iou_score": 0.25,
+      "position_accuracy": 0.1111111111111111,
+      "n_games": 1
+    },
+    {
+      "round": 6,
+      "overall_progress": 0.19283413848631237,
+      "completion_percentage": 0.21739130434782608,
+      "iou_score": 0.25,
+      "position_accuracy": 0.1111111111111111,
+      "n_games": 1
+    },
+    {
+      "round": 7,
+      "overall_progress": 0.20732689210950084,
+      "completion_percentage": 0.2608695652173913,
+      "iou_score": 0.25,
+      "position_accuracy": 0.1111111111111111,
+      "n_games": 1
+    },
+    {
+      "round": 8,
+      "overall_progress": 0.20732689210950084,
+      "completion_percentage": 0.2608695652173913,
+      "iou_score": 0.25,
+      "position_accuracy": 0.1111111111111111,
+      "n_games": 1
+    },
+    {
+      "round": 9,
+      "overall_progress": 0.20732689210950084,
+      "completion_percentage": 0.2608695652173913,
+      "iou_score": 0.25,
+      "position_accuracy": 0.1111111111111111,
+      "n_games": 1
+    },
+    {
+      "round": 10,
+      "overall_progress": 0.17616747181964576,
+      "completion_percentage": 0.21739130434782608,
+      "iou_score": 0.2,
+      "position_accuracy": 0.1111111111111111,
+      "n_games": 1
+    },
+    {
+      "round": 11,
+      "overall_progress": 0.1729928686450425,
+      "completion_percentage": 0.21739130434782608,
+      "iou_score": 0.19047619047619047,
+      "position_accuracy": 0.1111111111111111,
+      "n_games": 1
+    },
+    {
+      "round": 12,
+      "overall_progress": 0.1729928686450425,
+      "completion_percentage": 0.21739130434782608,
+      "iou_score": 0.19047619047619047,
+      "position_accuracy": 0.1111111111111111,
+      "n_games": 1
+    },
+    {
+      "round": 13,
+      "overall_progress": 0.1729928686450425,
+      "completion_percentage": 0.21739130434782608,
+      "iou_score": 0.19047619047619047,
+      "position_accuracy": 0.1111111111111111,
+      "n_games": 1
+    },
+    {
+      "round": 14,
+      "overall_progress": 0.1729928686450425,
+      "completion_percentage": 0.21739130434782608,
+      "iou_score": 0.19047619047619047,
+      "position_accuracy": 0.1111111111111111,
+      "n_games": 1
+    },
+    {
+      "round": 15,
+      "overall_progress": 0.2337244076374511,
+      "completion_percentage": 0.30434782608695654,
+      "iou_score": 0.2857142857142857,
+      "position_accuracy": 0.1111111111111111,
+      "n_games": 1
+    },
+    {
+      "round": 16,
+      "overall_progress": 0.2640901771336554,
+      "completion_percentage": 0.34782608695652173,
+      "iou_score": 0.3333333333333333,
+      "position_accuracy": 0.1111111111111111,
+      "n_games": 1
+    },
+    {
+      "round": 17,
+      "overall_progress": 0.2590396720831503,
+      "completion_percentage": 0.34782608695652173,
+      "iou_score": 0.3181818181818182,
+      "position_accuracy": 0.1111111111111111,
+      "n_games": 1
+    },
+    {
+      "round": 18,
+      "overall_progress": 0.2886839408578539,
+      "completion_percentage": 0.391304347826087,
+      "iou_score": 0.36363636363636365,
+      "position_accuracy": 0.1111111111111111,
+      "n_games": 1
+    },
+    {
+      "round": 19,
+      "overall_progress": 0.2886839408578539,
+      "completion_percentage": 0.391304347826087,
+      "iou_score": 0.36363636363636365,
+      "position_accuracy": 0.1111111111111111,
+      "n_games": 1
+    },
+    {
+      "round": 20,
+      "overall_progress": 0.2886839408578539,
+      "completion_percentage": 0.391304347826087,
+      "iou_score": 0.36363636363636365,
+      "position_accuracy": 0.1111111111111111,
+      "n_games": 1
+    },
+    {
+      "round": 21,
+      "overall_progress": 0.2944559466298597,
+      "completion_percentage": 0.391304347826087,
+      "iou_score": 0.38095238095238093,
+      "position_accuracy": 0.1111111111111111,
+      "n_games": 1
+    },
+    {
+      "round": 22,
+      "overall_progress": 0.2944559466298597,
+      "completion_percentage": 0.391304347826087,
+      "iou_score": 0.38095238095238093,
+      "position_accuracy": 0.1111111111111111,
+      "n_games": 1
+    },
+    {
+      "round": 23,
+      "overall_progress": 0.2886839408578539,
+      "completion_percentage": 0.391304347826087,
+      "iou_score": 0.36363636363636365,
+      "position_accuracy": 0.1111111111111111,
+      "n_games": 1
+    },
+    {
+      "round": 24,
+      "overall_progress": 0.3183282096325575,
+      "completion_percentage": 0.43478260869565216,
+      "iou_score": 0.4090909090909091,
+      "position_accuracy": 0.1111111111111111,
+      "n_games": 1
+    },
+    {
+      "round": 25,
+      "overall_progress": 0.3183282096325575,
+      "completion_percentage": 0.43478260869565216,
+      "iou_score": 0.4090909090909091,
+      "position_accuracy": 0.1111111111111111,
+      "n_games": 1
+    },
+    {
+      "round": 26,
+      "overall_progress": 0.3183282096325575,
+      "completion_percentage": 0.43478260869565216,
+      "iou_score": 0.4090909090909091,
+      "position_accuracy": 0.1111111111111111,
+      "n_games": 1
+    },
+    {
+      "round": 27,
+      "overall_progress": 0.3183282096325575,
+      "completion_percentage": 0.43478260869565216,
+      "iou_score": 0.4090909090909091,
+      "position_accuracy": 0.1111111111111111,
+      "n_games": 1
+    },
+    {
+      "round": 28,
+      "overall_progress": 0.38500951544429807,
+      "completion_percentage": 0.4782608695652174,
+      "iou_score": 0.45454545454545453,
+      "position_accuracy": 0.2222222222222222,
+      "n_games": 1
+    },
+    {
+      "round": 29,
+      "overall_progress": 0.38500951544429807,
+      "completion_percentage": 0.4782608695652174,
+      "iou_score": 0.45454545454545453,
+      "position_accuracy": 0.2222222222222222,
+      "n_games": 1
+    },
+    {
+      "round": 30,
+      "overall_progress": 0.3922245226593053,
+      "completion_percentage": 0.4782608695652174,
+      "iou_score": 0.47619047619047616,
+      "position_accuracy": 0.2222222222222222,
+      "n_games": 1
+    }
+  ],
+  "aggregate": {
+    "n_games": 1,
+    "n_completed": 0,
+    "mean_final_progress": 0.392225,
+    "final_overall_progress_by_round": {
+      "round": 30,
+      "overall_progress": 0.3922245226593053,
+      "completion_percentage": 0.4782608695652174,
+      "iou_score": 0.47619047619047616,
+      "position_accuracy": 0.2222222222222222,
+      "n_games": 1
+    }
+  }
+}
