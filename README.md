@@ -3,6 +3,37 @@
 一个把 [CRAFT](https://arxiv.org/abs/2603.25268)（arXiv:2603.25268v2）benchmark 与自定义
 **7-agent 多轮 Multi-Agent Debate 拓扑（Debate）** 结合的实验框架。每轮 7 个子 agent 都使用
 `gpt-4o-mini`，固定 25 轮，并按论文方法评估任务进度，最后把 25 轮的分数曲线画出来。
+本仓库的**最终目标**是用价值回归器学习"何时该停止辩论"的早停策略（见下文）。
+
+## 研究目标：用价值回归器学习早停策略
+
+在多轮 Debate 中，每轮 Judge 执行完动作后都要决定"是否进入下一轮"。目标是在质量分与
+token/latency 开销之间权衡：
+
+```text
+V = score − λ · token_cost
+```
+
+最终方案是训练一个**价值回归器**：给定第 t 轮的完整状态 `s_t`，预测继续辩论能带来的
+**剩余最大分数增量 Δscore(s_t)** 与 **剩余花费 Δcost(s_t)**，决策规则为：
+
+```text
+stop  ⟺  Δscore(s_t) < λ · Δcost(s_t)
+```
+
+λ 是权衡权重，可以在推理时连续调节，无需为每个 λ 重新训练。状态特征全部来自 trajectory：
+当前分与增量、最近 k 轮趋势、oracle 剩余动作数、失败/clarify 情况、累计 token 花费、轮数与
+结构复杂度（十几维特征，用逻辑回归/梯度提升等小模型即可）。
+
+学习流程（前四步完全离线，不产生新的 API 开销）：
+
+1. **采集轨迹**：craft-80 × 3 runs × 25 轮 = 240 局，每局是一段完整的 25 轮轨迹，作为数据集；
+2. **特征 + 回归目标**：按每条轨迹的事后最优停止点，算出每轮的 Δscore(s_t) 与 Δcost(s_t)
+   作为价值回归器的监督目标（纯离线计算）；
+3. **训练**：按**结构**切分 50/12/18（训练/验证/测试），训练价值回归器；
+4. **离线回放评估**：在完整轨迹上回放停止策略，与"永远跑满 25 轮"基线比较最终分、节省轮数与
+   token，画 score-cost Pareto 曲线；
+5. **实机接入**：把回归器接到 `run_debate.py` 每轮结束处，用少量真实运行确认离线估计。
 
 ## Debate 拓扑
 
@@ -19,6 +50,8 @@
 下一轮的三个 proposers 会同时看到题目和上一轮 Judge 的综合回答，如此循环 25 轮。
 
 ## 哪一层最值得升级模型
+
+（历史分析记录：当前实验已冻结为全部 `gpt-4o-mini`，以下内容仅作背景参考。）
 
 优先升级 **proposers（P1/P2/P3）**，收益最大，原因有三：
 
@@ -40,7 +73,7 @@ Critics 能过滤冲突和冗余，但补不了缺失的私有信息，边际收
 ```text
 CRAFT/
 ├── .secret/               # 你的 API key（不入库）
-├── benchmark/             # CRAFT 官方 20 个结构数据
+├── benchmark/             # CRAFT 官方 20 个结构 + 程序化生成的 craft-N 数据集
 ├── config/                # 实验配置
 ├── results/               # 汇总结果 + 分数曲线 PNG
 ├── src/craft_debate/      # 面向程序的核心代码
@@ -112,6 +145,7 @@ python3 scripts/run_debate.py --benchmark benchmark/craft-80.json --structures 0
 从当前版本起冻结为：**25 轮、7 个 agent 全部使用 `gpt-4o-mini`、拓扑保持 `3 → 3 → 1` 不变**。
 模型和轮数由 [config/debate_config.json](config/debate_config.json) 控制（`debate.max_rounds=25`），
 运行脚本不再接受 `--rounds / --model / --temperature` 命令行覆盖；如需换模型或轮数，直接改该配置文件。
+早停策略研究的所有数据采集都基于这套冻结设置（craft-80 × 3 runs × 25 轮）。
 
 ## 实验命名与产物
 
