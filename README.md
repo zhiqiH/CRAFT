@@ -18,6 +18,23 @@
 
 下一轮的三个 proposers 会同时看到题目和上一轮 Judge 的综合回答，如此循环 20 轮。
 
+## 哪一层最值得升级模型
+
+优先升级 **proposers（P1/P2/P3）**，收益最大，原因有三：
+
+1. **信息瓶颈在 proposers**：三个 proposers 是唯一能看到私有目标视图的 agent，critics 和
+   Judge 都看不到目标。proposer 没有说出的信息，后面任何 agent 都无法凭空补出来。
+2. **论文刻意弱化了 Builder**：CRAFT 用 oracle 候选动作限制了 Builder（对应这里的 Judge）的
+   动作空间，官方 README 明确说这是为了"把 Director 通信作为性能瓶颈单独隔离出来"。
+3. **产出比理解更难**：论文引用的研究表明 LLM 作为"听话者"明显强于"说话者"。proposers 是
+   产出方（说话者），critics/Judge 是理解方（听话者），瓶颈在产出方。
+
+次优先是 **Judge**：它负责把六份意见映射成最终动作，出错（层数、span、块编码）会直接扣分。
+如果 `oracle.enabled=false`（Judge 必须自己做完整空间推理），Judge 的升级收益会明显上升。
+Critics 能过滤冲突和冗余，但补不了缺失的私有信息，边际收益最低。
+
+`judges`（SG/MM/PS）是离线评估器，不参与决策、不影响分数曲线，只为诊断用，不需要为了提分升级它。
+
 ## 目录结构
 
 ```text
@@ -71,6 +88,42 @@ python3 scripts/run_debate.py \
 `--structures` 是所有 20 个结构的索引（`0-19`，7 simple / 8 medium / 5 complex）。
 `--runs` 对应论文里的多 run 设置；每个 structure-run 组合都会完整跑 20 轮。
 
+## 分层指定模型（升级 proposers 到 DeepSeek Flash）
+
+配置里 `model` 是全局默认值，`stages` 可以按 `proposers / critics / judge / judges` 分层覆盖。
+例如只把 proposers 升级为 `deepseek-v4-flash`（DeepSeek 官方 OpenAI 兼容接口）：
+
+```json
+"stages": {
+  "proposers": {
+    "model": "deepseek-v4-flash",
+    "provider": "deepseek",
+    "api_key": "deepseek_api_key",
+    "temperature": 0.7,
+    "max_tokens": 2000,
+    "thinking": "disabled"
+  }
+}
+```
+
+仓库里已经有一份现成配置，直接运行：
+
+```bash
+# DeepSeek key（在 platform.deepseek.com 申请）
+cp .secret/deepseek_api_key.example .secret/deepseek_api_key   # 替换成真实 key
+# 或者： export DEEPSEEK_API_KEY=sk-...
+
+python3 scripts/run_debate.py --config config/debate_config_deepseek_proposers.json
+```
+
+关于 DeepSeek V4-Flash（官方文档，base_url `https://api.deepseek.com`，模型 `deepseek-v4-flash`）：
+
+- 1M 上下文、384K 最大输出，OpenAI Chat Completions 兼容；
+- 默认开启 thinking 模式，此时 `temperature` 不生效且链式思考按输出计费；本框架的提示词已经自带
+  `<think>` 块，所以示例配置用 `thinking: "disabled"` 保持论文的 temperature=0.7 并省 token；
+- 想开思考模式把 `"thinking"` 改成 `"enabled"` 即可（V4-Flash 离线价约 $0.22/1M 输入、
+  $0.66/1M 输出，一个结构 × 20 轮 × 3 个 proposers 通常只需几美分）。
+
 ## 实验命名与产物
 
 每次实验按 `YYYYMMDDHHMM-<模型名>` 命名，`trajectories/` 与 `results/` 同名一一对应：
@@ -80,6 +133,10 @@ trajectories/202608172330-gpt-4o-mini.json   # 完整轨迹（每轮 7 个 agent
 results/202608172330-gpt-4o-mini.json        # 汇总（每轮分数曲线、最终进度等）
 results/202608172330-gpt-4o-mini.png         # 20 轮分数曲线可视化
 ```
+
+分层混合模型时，模型名部分会展开成 `模型-层名+...`，例如
+`202608172330-deepseek-v4-flash-proposers+gpt-4o-mini-critics+gpt-4o-mini-judge`，
+完整分层配置仍然记录在 trajectory 的 `experiment.config` 里。
 
 ## 复现论文的关键设置
 

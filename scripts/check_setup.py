@@ -40,19 +40,33 @@ def main() -> int:
             problems.append(f"benchmark file is not valid JSON: {benchmark}")
 
     config_path = PROJECT_ROOT / "config" / "debate_config.json"
+    config = None
     if not config_path.is_file():
         problems.append(f"config missing: {config_path}")
     else:
         try:
-            json.loads(config_path.read_text(encoding="utf-8"))
+            config = json.loads(config_path.read_text(encoding="utf-8"))
         except json.JSONDecodeError:
             problems.append(f"config file is not valid JSON: {config_path}")
 
-    key = load_api_key(PROJECT_ROOT)
-    if not key:
-        problems.append(
-            "no API key found — put it in .secret/openai_api_key or export OPENAI_API_KEY"
-        )
+    if config is not None:
+        providers = {"openai"}
+        stages = config.get("stages") or {}
+        for stage in ("proposers", "critics", "judge"):
+            providers.add((stages.get(stage) or {}).get("provider", "openai"))
+        if config.get("judges", {}).get("enabled"):
+            providers.add((stages.get("judges") or {}).get("provider", "openai"))
+        key_sources = {
+            "openai": ("openai_api_key", "OPENAI_API_KEY"),
+            "deepseek": ("deepseek_api_key", "DEEPSEEK_API_KEY"),
+        }
+        for provider in sorted(providers):
+            file_name, env_var = key_sources.get(provider, (None, None))
+            if file_name and not load_api_key(PROJECT_ROOT, file_name, env_var):
+                problems.append(
+                    f"no {provider} API key found — put it in .secret/{file_name} "
+                    f"or export {env_var}"
+                )
 
     if problems:
         print("Setup issues found:")
@@ -60,7 +74,7 @@ def main() -> int:
             print(f"  - {problem}")
         return 1
 
-    print("Setup OK: python, dependencies, benchmark, config, and API key are all present.")
+    print("Setup OK: python, dependencies, benchmark, config, and required API keys are all present.")
     return 0
 
 

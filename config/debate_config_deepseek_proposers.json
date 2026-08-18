@@ -46,7 +46,14 @@
     "temperature": 0.0
   },
   "stages": {
-    "proposers": null,
+    "proposers": {
+      "model": "deepseek-v4-flash",
+      "provider": "deepseek",
+      "api_key": "deepseek_api_key",
+      "temperature": 0.7,
+      "max_tokens": 2000,
+      "thinking": "disabled"
+    },
     "critics": null,
     "judge": null,
     "judges": null

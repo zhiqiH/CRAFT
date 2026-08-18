@@ -11,7 +11,7 @@ from typing import Any, Dict, List
 
 def experiment_name(timestamp: datetime, model: str) -> str:
     """``YYYYMMDDHHMM-<model>``, with the model part filesystem-safe."""
-    slug = re.sub(r"[^A-Za-z0-9._-]+", "-", model).strip("-").lower()
+    slug = re.sub(r"[^A-Za-z0-9._+-]+", "-", model).strip("-").lower()
     return f"{timestamp:%Y%m%d%H%M}-{slug}"
 
 

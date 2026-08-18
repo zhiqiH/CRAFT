@@ -9,6 +9,7 @@ import json
 import sys
 from datetime import datetime
 from pathlib import Path
+from typing import Any
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT / "src"))
@@ -19,9 +20,90 @@ from craft_debate.io import build_summary, experiment_name, write_json  # noqa: 
 from craft_debate.plotting import plot_score_curves  # noqa: E402
 from craft_debate.topology import Debate  # noqa: E402
 
+PROVIDERS = {
+    "openai": {
+        "env_var": "OPENAI_API_KEY",
+        "secret_file": "openai_api_key",
+        "base_url": None,
+    },
+    "deepseek": {
+        "env_var": "DEEPSEEK_API_KEY",
+        "secret_file": "deepseek_api_key",
+        "base_url": "https://api.deepseek.com",
+    },
+}
+
 
 def parse_list_arg(value: str) -> list[int]:
     return [int(item.strip()) for item in value.split(",") if item.strip()]
+
+
+def resolve_stage_config(stage: str, config: dict) -> dict:
+    """Merge global defaults with the optional per-stage override."""
+    judges_cfg = config.get("judges", {})
+    base = {
+        "model": judges_cfg.get("model", config["model"]) if stage == "judges" else config["model"],
+        "provider": "openai",
+        "temperature": (
+            judges_cfg.get("temperature", 0.0)
+            if stage == "judges"
+            else config.get("temperature", 0.7)
+        ),
+        "max_tokens": int(config.get("max_completion_tokens", 2000)),
+        "api_key": "openai_api_key",
+        "thinking": None,
+    }
+    override = (config.get("stages", {}) or {}).get(stage) or {}
+    base.update({key: value for key, value in override.items() if value is not None})
+    return base
+
+
+def make_client(stage_cfg: dict, mock: bool, api_cfg: dict) -> Any:
+    if mock:
+        return MockLLM(model=stage_cfg["model"])
+
+    provider = PROVIDERS.get(stage_cfg["provider"], PROVIDERS["openai"])
+    api_key = load_api_key(
+        PROJECT_ROOT,
+        key_name=stage_cfg.get("api_key", provider["secret_file"]),
+        env_var=provider["env_var"],
+    )
+    if not api_key:
+        raise RuntimeError(
+            f"no API key for {stage_cfg['provider']} — set {provider['env_var']} "
+            f"or put it in .secret/{stage_cfg.get('api_key', provider['secret_file'])}"
+        )
+
+    extra_body = {}
+    if stage_cfg["provider"] == "deepseek" and stage_cfg.get("thinking") == "disabled":
+        extra_body = {"thinking": {"type": "disabled"}}
+    elif stage_cfg["provider"] == "deepseek" and stage_cfg.get("thinking") == "enabled":
+        extra_body = {"thinking": {"type": "enabled"}}
+
+    return LLMClient(
+        model=stage_cfg["model"],
+        temperature=float(stage_cfg["temperature"]),
+        max_completion_tokens=int(stage_cfg["max_tokens"]),
+        api_key=api_key,
+        timeout_seconds=float(api_cfg.get("timeout_seconds", 120)),
+        max_retries=int(api_cfg.get("max_retries", 6)),
+        backoff_seconds=float(api_cfg.get("backoff_seconds", 2)),
+        base_url=provider["base_url"],
+        provider=stage_cfg["provider"],
+        extra_body=extra_body,
+    )
+
+
+def debate_model_label(stage_configs: dict) -> str:
+    """Headline model label for the experiment name."""
+    labels = [
+        f"{stage_configs[stage]['model']}-{stage}"
+        for stage in ("proposers", "critics", "judge")
+    ]
+    models = {stage_configs[stage]["model"] for stage in ("proposers", "critics", "judge")}
+    if len(models) == 1:
+        return next(iter(models))
+    return "+".join(labels)
 
 
 def parse_args() -> argparse.Namespace:
@@ -62,8 +144,13 @@ def main() -> int:
     if args.judges:
         config["judges"]["enabled"] = True
 
-    model = config["model"]
-    display_model = f"{model}-mock" if args.mock else model
+    stage_configs = {
+        stage: resolve_stage_config(stage, config)
+        for stage in ("proposers", "critics", "judge", "judges")
+    }
+    display_model = debate_model_label(stage_configs)
+    if args.mock:
+        display_model = f"{display_model}-mock"
     timestamp = datetime.now()
     name = args.name or experiment_name(timestamp, display_model)
 
@@ -75,43 +162,29 @@ def main() -> int:
         print(f"ERROR: structure index out of range (0-{len(structures) - 1}): {unknown}")
         return 1
 
-    if args.mock:
-        client = MockLLM(model=display_model)
-        judges_client = client
-    else:
-        api_key = load_api_key(PROJECT_ROOT)
-        if not api_key:
-            print(
-                "ERROR: no OpenAI API key found. Put it in .secret/openai_api_key "
-                "(one line, no quotes) or export OPENAI_API_KEY."
+    try:
+        clients = {}
+        for stage in ("proposers", "critics", "judge"):
+            clients[stage] = make_client(
+                stage_configs[stage], mock=args.mock, api_cfg=config.get("api", {})
             )
-            return 1
-        api_cfg = config.get("api", {})
-        client = LLMClient(
-            model=model,
-            temperature=float(config.get("temperature", 0.7)),
-            max_completion_tokens=int(config.get("max_completion_tokens", 2000)),
-            api_key=api_key,
-            timeout_seconds=float(api_cfg.get("timeout_seconds", 120)),
-            max_retries=int(api_cfg.get("max_retries", 6)),
-            backoff_seconds=float(api_cfg.get("backoff_seconds", 2)),
-        )
-        judge_cfg = config.get("judges", {})
-        judges_client = (
-            LLMClient(
-                model=judge_cfg.get("model", model),
-                temperature=float(judge_cfg.get("temperature", 0.0)),
-                max_completion_tokens=int(config.get("max_completion_tokens", 2000)),
-                api_key=api_key,
-                timeout_seconds=float(api_cfg.get("timeout_seconds", 120)),
-                max_retries=int(api_cfg.get("max_retries", 6)),
-                backoff_seconds=float(api_cfg.get("backoff_seconds", 2)),
+        clients["judges"] = (
+            make_client(
+                stage_configs["judges"], mock=args.mock, api_cfg=config.get("api", {})
             )
             if config["judges"].get("enabled")
             else None
         )
+    except RuntimeError as exc:
+        print(f"ERROR: {exc}")
+        return 1
 
-    print(f"Experiment: {name} | model={display_model} | "
+    model_summary = ", ".join(
+        f"{stage}={stage_configs[stage]['model']}"
+        for stage in ("proposers", "critics", "judge")
+    )
+
+    print(f"Experiment: {name} | agents={model_summary} | "
           f"structures={indices} runs={runs} rounds={config['debate']['max_rounds']}")
     print(f"Benchmark: {len(structures)} structures loaded from {config['benchmark']['path']}")
 
@@ -129,8 +202,7 @@ def main() -> int:
                     structure_data=structure_data,
                     structure_index=structure_index,
                     run_index=run_index,
-                    client=client,
-                    judges_client=judges_client,
+                    clients=clients,
                 )
                 game = await debate.run()
                 games.append(game)

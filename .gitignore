@@ -1,6 +1,7 @@
 # Secrets — never commit the real API key
 .secret/*
 !.secret/openai_api_key.example
+!.secret/deepseek_api_key.example
 
 # Python
 __pycache__/

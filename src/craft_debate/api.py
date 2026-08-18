@@ -10,12 +10,16 @@ from pathlib import Path
 from typing import Any, Dict, Optional
 
 
-def load_api_key(project_root: Path) -> Optional[str]:
-    """Key precedence: OPENAI_API_KEY env var, then .secret/openai_api_key file."""
-    env_key = os.getenv("OPENAI_API_KEY", "").strip()
+def load_api_key(
+    project_root: Path,
+    key_name: str = "openai_api_key",
+    env_var: str = "OPENAI_API_KEY",
+) -> Optional[str]:
+    """Key precedence: env var, then ``.secret/<key_name>`` file."""
+    env_key = os.getenv(env_var, "").strip()
     if env_key:
         return env_key
-    key_file = project_root / ".secret" / "openai_api_key"
+    key_file = project_root / ".secret" / key_name
     if key_file.is_file():
         for line in key_file.read_text(encoding="utf-8").splitlines():
             line = line.strip()
@@ -38,10 +42,15 @@ class LLMClient:
         timeout_seconds: float = 120.0,
         max_retries: int = 6,
         backoff_seconds: float = 2.0,
+        base_url: Optional[str] = None,
+        provider: str = "openai",
+        extra_body: Optional[Dict[str, Any]] = None,
     ) -> None:
         self.model = model
         self.temperature = temperature
         self.max_completion_tokens = max_completion_tokens
+        self.provider = provider
+        self.extra_body = dict(extra_body or {})
         self.backoff_seconds = backoff_seconds
         self.max_retries = max_retries
         self._client = None
@@ -50,6 +59,8 @@ class LLMClient:
             "timeout": timeout_seconds,
             "max_retries": 0,
         }
+        if base_url:
+            self._client_kwargs["base_url"] = base_url
 
     async def _get_client(self):
         if self._client is None:
@@ -67,19 +78,31 @@ class LLMClient:
             try:
                 started = time.monotonic()
                 client = await self._get_client()
-                response = await client.chat.completions.create(
-                    model=self.model,
-                    temperature=self.temperature,
-                    max_completion_tokens=self.max_completion_tokens,
-                    messages=[
+                request: Dict[str, Any] = {
+                    "model": self.model,
+                    "temperature": self.temperature,
+                    "messages": [
                         {"role": "system", "content": system},
                         {"role": "user", "content": user},
                     ],
-                )
+                }
+                if self.provider == "deepseek":
+                    # DeepSeek's OpenAI-compatible endpoint accepts `max_tokens`
+                    # (its docs list max_tokens, not max_completion_tokens).
+                    request["max_tokens"] = self.max_completion_tokens
+                else:
+                    request["max_completion_tokens"] = self.max_completion_tokens
+                if self.extra_body:
+                    request["extra_body"] = self.extra_body
+                response = await client.chat.completions.create(**request)
                 content = response.choices[0].message.content or ""
+                # Thinking-mode providers return the chain-of-thought separately;
+                # keep it in the record without breaking downstream tag parsing.
+                reasoning = getattr(response.choices[0].message, "reasoning_content", None)
                 usage = response.usage
                 return {
                     "content": content,
+                    "reasoning_content": reasoning or "",
                     "model": self.model,
                     "latency_seconds": round(time.monotonic() - started, 3),
                     "usage": {

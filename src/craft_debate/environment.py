@@ -227,10 +227,16 @@ class GameState:
         position = move["position"]
         layer = move["layer"]
         if move["action"] == "place":
-            structure_placement = self.target_structure[position][layer] == move["block"]
+            target_stack = self.target_structure[position]
+            structure_placement = (
+                layer < len(target_stack) and target_stack[layer] == move["block"]
+            )
             eval_block = move["block"]
         else:
-            structure_placement = self.target_structure[position][layer] != removed_block
+            target_stack = self.target_structure[position]
+            structure_placement = (
+                layer < len(target_stack) and target_stack[layer] != removed_block
+            )
             eval_block = removed_block
 
         side_placement = self._side_placement(move["action"], position, layer, eval_block)

@@ -177,7 +177,8 @@ class Debate:
         structure_data: Dict[str, Any],
         structure_index: int,
         run_index: int,
-        client: Any,
+        clients: Optional[Dict[str, Any]] = None,
+        client: Any = None,
         judges_client: Optional[Any] = None,
         verbose: bool = True,
     ) -> None:
@@ -185,8 +186,15 @@ class Debate:
         self.structure_data = structure_data
         self.structure_index = structure_index
         self.run_index = run_index
-        self.client = client
-        self.judges_client = judges_client
+        if clients is not None:
+            self.clients = clients
+        else:  # backward-compatible fallback: one model for everything
+            self.clients = {
+                "proposers": client,
+                "critics": client,
+                "judge": client,
+                "judges": judges_client or client,
+            }
         self.verbose = verbose
 
         debate_cfg = config["debate"]
@@ -271,7 +279,7 @@ class Debate:
             prev_judge_answer=self.prev_judge_answer,
             round_number=round_number,
         )
-        judge_resp = await self.client.complete(
+        judge_resp = await self.clients["judge"].complete(
             JUDGE_SYSTEM, judge_prompt, {"kind": "judge", "oracle_moves": oracle_moves}
         )
         parsed_judge = parse_judge_response(judge_resp["content"])
@@ -293,7 +301,7 @@ class Debate:
         record["score"] = score
 
         # ---- optional paper judges (SG / MM / PS) ----
-        if self.run_judges and self.judges_client is not None:
+        if self.run_judges and self.clients.get("judges") is not None:
             from .judges import run_judges
 
             followed = bool(
@@ -307,7 +315,7 @@ class Debate:
                 )
             )
             record["judge_evals"] = await run_judges(
-                self.judges_client,
+                self.clients["judges"],
                 board_state=self.env.current_structure,
                 oracle_moves=oracle_moves or [],
                 proposers=[
@@ -366,7 +374,7 @@ class Debate:
             round_number=round_number,
             available_blocks=self.env.available_blocks,
         )
-        response = await self.client.complete(
+        response = await self.clients["proposers"].complete(
             PROPOSER_SYSTEM, prompt, {"kind": "proposer", "agent_id": agent_id}
         )
         parsed = parse_proposer_response(response["content"])
@@ -401,7 +409,7 @@ class Debate:
             prev_judge_answer=self.prev_judge_answer,
             round_number=round_number,
         )
-        response = await self.client.complete(
+        response = await self.clients["critics"].complete(
             CRITIC_SYSTEM, prompt, {"kind": "critic", "agent_id": agent_id}
         )
         parsed = parse_critic_response(response["content"])
