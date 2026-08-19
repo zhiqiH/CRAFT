@@ -86,9 +86,10 @@ class LLMClient:
                         {"role": "user", "content": user},
                     ],
                 }
-                if self.provider == "deepseek":
-                    # DeepSeek's OpenAI-compatible endpoint accepts `max_tokens`
-                    # (its docs list max_tokens, not max_completion_tokens).
+                if self.provider in ("deepseek", "ollama"):
+                    # DeepSeek and Ollama OpenAI-compatible endpoints accept
+                    # `max_tokens` (their docs list max_tokens, not
+                    # max_completion_tokens).
                     request["max_tokens"] = self.max_completion_tokens
                 else:
                     request["max_completion_tokens"] = self.max_completion_tokens

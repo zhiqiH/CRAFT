@@ -31,6 +31,11 @@ PROVIDERS = {
         "secret_file": "deepseek_api_key",
         "base_url": "https://api.deepseek.com",
     },
+    "ollama": {
+        "env_var": "OLLAMA_API_KEY",
+        "secret_file": "ollama_api_key",
+        "base_url": "http://localhost:11434/v1",
+    },
 }
 
 
