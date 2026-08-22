@@ -1,12 +1,12 @@
 {
   "benchmark": {
     "path": "benchmark/craft_structures_20.json",
-    "structures": [0],
+    "structures": [7],
     "runs": [1, 2, 3]
   },
-  "turns": 20,
+  "turns": 50,
   "director": {
-    "model": "mistral:7b-instruct-v0.3-q8_0",
+    "model": "qwen2.5:7b-instruct-q5_K_M",
     "provider": "ollama",
     "temperature": 0.0,
     "max_tokens": 512
