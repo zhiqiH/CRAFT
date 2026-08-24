@@ -10,6 +10,8 @@ Examples:
 
     python3 benchmark/generate_benchmark.py --count 60 --out benchmark/craft-60.json --seed 7
     python3 benchmark/generate_benchmark.py --count 60 --min-ceiling 0.7
+    python3 benchmark/generate_benchmark.py --count 100 --empty-hidden-cells \
+        --out benchmark/craft-100-hollow.json
 """
 
 from __future__ import annotations
@@ -78,12 +80,24 @@ def generate_layer_tiling(
     return grid, spans
 
 
-def generate_valid_structure(rng: Optional[random.Random] = None) -> Tuple[Dict[str, List[str]], Dict[int, List[Tuple[str, str]]]]:
-    """Generate one valid CRAFT target (7 required stacks of 3, optional cells 0-2)."""
+def generate_valid_structure(
+    rng: Optional[random.Random] = None,
+    empty_hidden_cells: bool = False,
+) -> Tuple[Dict[str, List[str]], Dict[int, List[Tuple[str, str]]]]:
+    """Generate one valid CRAFT target.
+
+    The seven visible positions always have height 3. By default, the two
+    positions hidden from every Director have independently sampled heights in
+    [0, 2]. ``empty_hidden_cells`` fixes both hidden positions at height 0.
+    """
     if rng is None:
         rng = random.Random()
 
-    opt_heights = {coord: rng.randint(0, 2) for coord in OPTIONAL}
+    opt_heights = (
+        {coord: 0 for coord in OPTIONAL}
+        if empty_hidden_cells
+        else {coord: rng.randint(0, 2) for coord in OPTIONAL}
+    )
     structure = {coord: [] for coord in ALL_COORDS}
     all_spans: Dict[int, List[Tuple[str, str]]] = {}
     prev_layer: Optional[Dict[str, str]] = None
@@ -192,6 +206,7 @@ def build_dataset(
     count: int,
     seed: int,
     min_ceiling: Optional[float] = None,
+    empty_hidden_cells: bool = False,
 ) -> Tuple[List[Dict[str, Any]], Dict[str, Any]]:
     rng = random.Random(seed)
     structures: List[Dict[str, Any]] = []
@@ -201,7 +216,10 @@ def build_dataset(
 
     while len(structures) < count and attempts < max_attempts:
         attempts += 1
-        structure, spans = generate_valid_structure(rng=rng)
+        structure, spans = generate_valid_structure(
+            rng=rng,
+            empty_hidden_cells=empty_hidden_cells,
+        )
         valid, errors = validate_structure(structure, spans, strict=True)
         if not valid:
             continue
@@ -244,6 +262,11 @@ def main() -> int:
         type=float,
         help="Discard structures whose theoretical progress ceiling is below this value",
     )
+    parser.add_argument(
+        "--empty-hidden-cells",
+        action="store_true",
+        help="Force the Director-invisible positions (1,1) and (2,1) to be empty",
+    )
     args = parser.parse_args()
 
     if args.count <= 0:
@@ -253,7 +276,12 @@ def main() -> int:
     if not out_path.is_absolute():
         out_path = PROJECT_ROOT / out_path
 
-    structures, report = build_dataset(args.count, args.seed, args.min_ceiling)
+    structures, report = build_dataset(
+        args.count,
+        args.seed,
+        args.min_ceiling,
+        empty_hidden_cells=args.empty_hidden_cells,
+    )
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(structures, indent=2, ensure_ascii=False), encoding="utf-8")
 
