@@ -231,6 +231,11 @@ def parse_args() -> argparse.Namespace:
         default=str(PROJECT_ROOT / "config" / "paper_config.json"),
         help="Path to the paper-protocol config",
     )
+    parser.add_argument(
+        "--benchmark",
+        help="Benchmark dataset: a name like craft-100-hollow (resolves to "
+        "benchmark/craft-100-hollow.json) or a JSON path",
+    )
     parser.add_argument("--structures", help="Comma-separated structure indices, e.g. 0")
     parser.add_argument("--runs", help="Comma-separated run indices, e.g. 1,2,3")
     parser.add_argument("--turns", type=int, help="Override the number of turns per game")
@@ -245,6 +250,15 @@ def main() -> int:
     if not config_path.is_absolute():
         config_path = PROJECT_ROOT / config_path
     config = json.loads(config_path.read_text(encoding="utf-8"))
+
+    if args.benchmark:
+        value = args.benchmark
+        if not value.endswith(".json"):
+            if "/" in value or "\\" in value:
+                value = f"{value}.json"
+            else:
+                value = f"benchmark/{value}.json"
+        config["benchmark"]["path"] = value
 
     if args.structures:
         config["benchmark"]["structures"] = parse_list_arg(args.structures)
