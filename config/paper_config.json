@@ -4,7 +4,7 @@
     "structures": [7],
     "runs": [1, 2, 3]
   },
-  "turns": 50,
+  "turns": 20,
   "director": {
     "model": "qwen2.5:7b-instruct-q5_K_M",
     "provider": "ollama",
