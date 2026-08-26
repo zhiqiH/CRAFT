@@ -17,7 +17,7 @@ import hashlib
 import json
 import random
 import re
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 from .api import LLMClient  # noqa: F401  (kept importable for type clarity)
 from .domain import ALL_COORDS, AVAILABLE_BLOCKS, PERSPECTIVE_DESCRIPTIONS, get_director_views

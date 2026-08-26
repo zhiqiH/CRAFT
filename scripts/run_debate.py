@@ -45,20 +45,21 @@ def parse_list_arg(value: str) -> list[int]:
 
 def resolve_stage_config(stage: str, config: dict) -> dict:
     """Merge global defaults with the optional per-stage override."""
-    judges_cfg = config.get("judges", {})
     base = {
-        "model": judges_cfg.get("model", config["model"]) if stage == "judges" else config["model"],
+        "model": config["model"],
         "provider": "openai",
-        "temperature": (
-            judges_cfg.get("temperature", 0.0)
-            if stage == "judges"
-            else config.get("temperature", 0.7)
-        ),
+        "temperature": config.get("temperature", 0.7),
         "max_tokens": int(config.get("max_completion_tokens", 2000)),
         "api_key": "openai_api_key",
         "thinking": None,
     }
-    override = (config.get("stages", {}) or {}).get(stage) or {}
+    legacy_stage = {
+        "phase1": "proposers",
+        "reconciliation": "critics",
+        "builder": "judge",
+    }[stage]
+    stages = config.get("stages", {}) or {}
+    override = stages.get(stage) or stages.get(legacy_stage) or {}
     base.update({key: value for key, value in override.items() if value is not None})
     return base
 
@@ -103,16 +104,19 @@ def debate_model_label(stage_configs: dict) -> str:
     """Headline model label for the experiment name."""
     labels = [
         f"{stage_configs[stage]['model']}-{stage}"
-        for stage in ("proposers", "critics", "judge")
+        for stage in ("phase1", "reconciliation", "builder")
     ]
-    models = {stage_configs[stage]["model"] for stage in ("proposers", "critics", "judge")}
+    models = {
+        stage_configs[stage]["model"]
+        for stage in ("phase1", "reconciliation", "builder")
+    }
     if len(models) == 1:
         return next(iter(models))
     return "+".join(labels)
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Run the 7-agent Debate on CRAFT")
+    parser = argparse.ArgumentParser(description="Run oracle-free 3+3+1 Debate on CRAFT")
     parser.add_argument(
         "--config",
         default=str(PROJECT_ROOT / "config" / "debate_config.json"),
@@ -124,7 +128,6 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--structures", help="Comma-separated structure indices, e.g. 0,1,2")
     parser.add_argument("--runs", help="Comma-separated run indices, e.g. 1,2,3")
-    parser.add_argument("--judges", action="store_true", help="Also run the paper's SG/MM/PS judges")
     parser.add_argument("--mock", action="store_true", help="Dry run with a deterministic mock LLM")
     parser.add_argument("--name", help="Explicit experiment name (overrides YYYYMMDDHHMM-<model>)")
     return parser.parse_args()
@@ -150,12 +153,9 @@ def main() -> int:
         config["benchmark"]["structures"] = parse_list_arg(args.structures)
     if args.runs:
         config["benchmark"]["runs"] = parse_list_arg(args.runs)
-    if args.judges:
-        config["judges"]["enabled"] = True
-
     stage_configs = {
         stage: resolve_stage_config(stage, config)
-        for stage in ("proposers", "critics", "judge", "judges")
+        for stage in ("phase1", "reconciliation", "builder")
     }
     display_model = debate_model_label(stage_configs)
     if args.mock:
@@ -173,24 +173,17 @@ def main() -> int:
 
     try:
         clients = {}
-        for stage in ("proposers", "critics", "judge"):
+        for stage in ("phase1", "reconciliation", "builder"):
             clients[stage] = make_client(
                 stage_configs[stage], mock=args.mock, api_cfg=config.get("api", {})
             )
-        clients["judges"] = (
-            make_client(
-                stage_configs["judges"], mock=args.mock, api_cfg=config.get("api", {})
-            )
-            if config["judges"].get("enabled")
-            else None
-        )
     except RuntimeError as exc:
         print(f"ERROR: {exc}")
         return 1
 
     model_summary = ", ".join(
         f"{stage}={stage_configs[stage]['model']}"
-        for stage in ("proposers", "critics", "judge")
+        for stage in ("phase1", "reconciliation", "builder")
     )
 
     print(f"Experiment: {name} | agents={model_summary} | "
@@ -228,7 +221,7 @@ def main() -> int:
             "created_at": timestamp.isoformat(timespec="seconds"),
             "model": display_model,
             "mock": bool(args.mock),
-            "topology": "Debate (3 proposers -> 3 critics -> 1 judge)",
+            "topology": "Oracle-free Debate (3 Directors -> 3 reconciliations -> 1 Builder)",
             "paper": "CRAFT: arXiv:2603.25268v2",
             "config": config,
         },

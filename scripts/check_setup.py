@@ -56,10 +56,8 @@ def main() -> int:
     if config is not None:
         providers = {"openai"}
         stages = config.get("stages") or {}
-        for stage in ("proposers", "critics", "judge"):
+        for stage in ("phase1", "reconciliation", "builder"):
             providers.add((stages.get(stage) or {}).get("provider", "openai"))
-        if config.get("judges", {}).get("enabled"):
-            providers.add((stages.get("judges") or {}).get("provider", "openai"))
         key_sources = {
             "openai": ("openai_api_key", "OPENAI_API_KEY"),
             "deepseek": ("deepseek_api_key", "DEEPSEEK_API_KEY"),

@@ -16,52 +16,37 @@
     "max_rounds": 20,
     "terminate_early": false,
     "start_from_empty": true,
-    "oracle": {
-      "enabled": true,
-      "n": 5
-    },
     "history": {
       "max_messages": 50,
       "trim_to": 40
     },
     "roles": {
-      "proposers": [
-        {"id": "P1", "director": "D1", "archetype": "cautious"},
-        {"id": "P2", "director": "D2", "archetype": "synthesizer"},
-        {"id": "P3", "director": "D3", "archetype": "skeptical"}
+      "directors": [
+        {"id": "D1", "director": "D1", "archetype": "cautious"},
+        {"id": "D2", "director": "D2", "archetype": "synthesizer"},
+        {"id": "D3", "director": "D3", "archetype": "skeptical"}
       ],
-      "critics": [
-        {"id": "C1", "focus": "spatial_grounding"},
-        {"id": "C2", "focus": "mind_modeling"},
-        {"id": "C3", "focus": "pragmatic_sufficiency"}
-      ],
-      "judge": {
-        "id": "J1"
+      "builder": {
+        "id": "Builder"
       }
     }
   },
-  "judges": {
-    "enabled": false,
-    "model": "gpt-4o-mini",
-    "temperature": 0.0
-  },
   "stages": {
-    "proposers": {
+    "phase1": {
       "model": "mistral:7b-instruct-v0.3-q8_0",
       "provider": "ollama",
       "temperature": 0.0,
       "max_tokens": 512
     },
-    "critics": {
+    "reconciliation": {
       "model": "mistral:7b-instruct-v0.3-q8_0",
       "provider": "ollama",
       "temperature": 0.0,
       "max_tokens": 512
     },
-    "judge": {
+    "builder": {
       "model": "gpt-4o-mini"
-    },
-    "judges": null
+    }
   },
   "output": {
     "trajectories_dir": "trajectories",

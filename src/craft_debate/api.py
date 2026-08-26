@@ -141,31 +141,45 @@ class MockLLM:
         kind = meta.get("kind", "agent")
         if kind == "proposer":
             content = (
-                "<think>Mock proposer: check my private wall and pick the next missing block.</think>\n"
-                "<message>Mock proposer: place the next block needed on my wall, matching my target view.</message>"
+                "<think>Mock Director checks its private wall for a missing block.</think>\n"
+                "<message>Place the next missing block on my bottom layer.</message>"
             )
-        elif kind == "critic":
+        elif kind == "observation":
             content = (
-                "<critique>Mock critic: the proposers' messages are consistent enough to act on.</critique>\n"
-                "<message>Mock critic: endorse the most concrete proposer instruction.</message>"
+                "<observation>My wall has a missing bottom support.</observation>\n"
+                "<proposed_action>Place a small block at that bottom position.</proposed_action>\n"
+                "<reasoning>The public board shows the position is empty.</reasoning>\n"
+                "<confidence>0.5</confidence>"
             )
+        elif kind == "reconciliation":
+            content = (
+                "<agreement>The Directors recommend a bottom-layer placement.</agreement>\n"
+                "<contradictions>Block identity is uncertain.</contradictions>\n"
+                "<revision>unchanged</revision>\n"
+                "<complementary_evidence>The other walls may resolve the position.</complementary_evidence>\n"
+                "<recommended_action>Choose the most supported legal bottom placement.</recommended_action>\n"
+                "<reasoning>This is consistent with the public empty board.</reasoning>\n"
+                "<confidence>0.4</confidence>"
+            )
+        elif kind == "builder":
+            legal_actions = meta.get("legal_actions") or []
+            action_id = legal_actions[0]["id"] if legal_actions else "A0000"
+            content = f"<action_id>{action_id}</action_id>"
         elif kind == "judge":
+            # Legacy paper-protocol mock. It intentionally remains scoped to that
+            # separate oracle-reproduction runner, never the Debate pipeline.
             oracle_moves = meta.get("oracle_moves") or []
-            if oracle_moves:
+            if not oracle_moves:
+                content = "<move>CLARIFY:no candidate move (mock)</move>"
+            else:
                 move = oracle_moves[0]
                 if move["action"] == "place":
                     line = f"PLACE:{move['block']}:{move['position']}:{move['layer']}"
-                    if move.get("span_to"):
-                        line += f":{move['span_to']}"
-                    line += ":CONFIRM:mock-oracle move"
                 else:
                     line = f"REMOVE:{move['position']}:{move['layer']}"
-                    if move.get("span_to"):
-                        line += f":{move['span_to']}"
-                    line += ":CONFIRM:mock-oracle move"
-                content = f"<move>{line}</move>"
-            else:
-                content = "<move>CLARIFY:board already complete (mock)</move>"
+                if move.get("span_to"):
+                    line += f":{move['span_to']}"
+                content = f"<move>{line}:CONFIRM:mock paper-protocol move</move>"
         else:
             content = "mock"
         return {

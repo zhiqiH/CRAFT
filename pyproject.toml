@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "craft-debate"
 version = "0.1.0"
-description = "7-agent multi-round Debate topology evaluated on the CRAFT benchmark"
+description = "Oracle-free 3+3+1 partial-observation Debate on the CRAFT benchmark"
 readme = "README.md"
 requires-python = ">=3.9"
 dependencies = [
