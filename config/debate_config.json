@@ -13,7 +13,7 @@
     "runs": [1, 2, 3]
   },
   "debate": {
-    "max_rounds": 20,
+    "max_rounds": 30,
     "terminate_early": false,
     "start_from_empty": true,
     "history": {
@@ -33,13 +33,13 @@
   },
   "stages": {
     "phase1": {
-      "model": "mistral:7b-instruct-v0.3-q8_0",
+      "model": "qwen2.5:7b-instruct-q5_K_M",
       "provider": "ollama",
       "temperature": 0.0,
       "max_tokens": 512
     },
     "reconciliation": {
-      "model": "mistral:7b-instruct-v0.3-q8_0",
+      "model": "qwen2.5:7b-instruct-q5_K_M",
       "provider": "ollama",
       "temperature": 0.0,
       "max_tokens": 512
