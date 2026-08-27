@@ -13,7 +13,7 @@
     "runs": [1, 2, 3]
   },
   "debate": {
-    "max_rounds": 30,
+    "max_rounds": 20,
     "terminate_early": false,
     "start_from_empty": true,
     "history": {

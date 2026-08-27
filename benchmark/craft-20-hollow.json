@@ -1,0 +1,4277 @@
+[
+  {
+    "id": "craft-20-001",
+    "complexity": "simple",
+    "structure": {
+      "(0,0)": [
+        "gl",
+        "rl",
+        "gs"
+      ],
+      "(0,1)": [
+        "bs",
+        "rl",
+        "ol"
+      ],
+      "(0,2)": [
+        "ol",
+        "bs",
+        "ol"
+      ],
+      "(1,0)": [
+        "gl",
+        "rl",
+        "ys"
+      ],
+      "(1,1)": [],
+      "(1,2)": [
+        "ol",
+        "gs",
+        "bs"
+      ],
+      "(2,0)": [
+        "bs",
+        "rl",
+        "gs"
+      ],
+      "(2,1)": [],
+      "(2,2)": [
+        "os",
+        "rs",
+        "os"
+      ]
+    },
+    "spans": {
+      "0": [
+        [
+          "(0,2)",
+          "(1,2)"
+        ],
+        [
+          "(1,0)",
+          "(0,0)"
+        ]
+      ],
+      "1": [
+        [
+          "(1,0)",
+          "(2,0)"
+        ],
+        [
+          "(0,0)",
+          "(0,1)"
+        ]
+      ],
+      "2": [
+        [
+          "(0,2)",
+          "(0,1)"
+        ]
+      ]
+    },
+    "director_views": {
+      "D1": {
+        "row_0": [
+          {
+            "color": "green",
+            "size": 2
+          },
+          {
+            "color": "green",
+            "size": 2
+          },
+          {
+            "color": "blue",
+            "size": 1
+          }
+        ],
+        "row_1": [
+          {
+            "color": "red",
+            "size": 1
+          },
+          {
+            "color": "red",
+            "size": 2
+          },
+          {
+            "color": "red",
+            "size": 2
+          }
+        ],
+        "row_2": [
+          {
+            "color": "green",
+            "size": 1
+          },
+          {
+            "color": "yellow",
+            "size": 1
+          },
+          {
+            "color": "green",
+            "size": 1
+          }
+        ]
+      },
+      "D2": {
+        "row_0": [
+          {
+            "color": "green",
+            "size": 1
+          },
+          {
+            "color": "blue",
+            "size": 1
+          },
+          {
+            "color": "orange",
+            "size": 1
+          }
+        ],
+        "row_1": [
+          {
+            "color": "red",
+            "size": 2
+          },
+          {
+            "color": "red",
+            "size": 2
+          },
+          {
+            "color": "blue",
+            "size": 1
+          }
+        ],
+        "row_2": [
+          {
+            "color": "green",
+            "size": 1
+          },
+          {
+            "color": "orange",
+            "size": 2
+          },
+          {
+            "color": "orange",
+            "size": 2
+          }
+        ]
+      },
+      "D3": {
+        "row_0": [
+          {
+            "color": "orange",
+            "size": 2
+          },
+          {
+            "color": "orange",
+            "size": 2
+          },
+          {
+            "color": "orange",
+            "size": 1
+          }
+        ],
+        "row_1": [
+          {
+            "color": "blue",
+            "size": 1
+          },
+          {
+            "color": "green",
+            "size": 1
+          },
+          {
+            "color": "red",
+            "size": 1
+          }
+        ],
+        "row_2": [
+          {
+            "color": "orange",
+            "size": 1
+          },
+          {
+            "color": "blue",
+            "size": 1
+          },
+          {
+            "color": "orange",
+            "size": 1
+          }
+        ]
+      }
+    },
+    "metadata": {
+      "total_blocks": 21,
+      "filled_positions": 7,
+      "optional_heights": {
+        "(1,1)": 0,
+        "(2,1)": 0
+      }
+    }
+  },
+  {
+    "id": "craft-20-002",
+    "complexity": "simple",
+    "structure": {
+      "(0,0)": [
+        "rs",
+        "bs",
+        "os"
+      ],
+      "(0,1)": [
+        "gs",
+        "ys",
+        "gs"
+      ],
+      "(0,2)": [
+        "bl",
+        "ol",
+        "gs"
+      ],
+      "(1,0)": [
+        "bs",
+        "rl",
+        "ol"
+      ],
+      "(1,1)": [],
+      "(1,2)": [
+        "bl",
+        "ol",
+        "bl"
+      ],
+      "(2,0)": [
+        "ys",
+        "rl",
+        "ol"
+      ],
+      "(2,1)": [],
+      "(2,2)": [
+        "bs",
+        "gs",
+        "bl"
+      ]
+    },
+    "spans": {
+      "0": [
+        [
+          "(1,2)",
+          "(0,2)"
+        ]
+      ],
+      "1": [
+        [
+          "(1,0)",
+          "(2,0)"
+        ],
+        [
+          "(0,2)",
+          "(1,2)"
+        ]
+      ],
+      "2": [
+        [
+          "(2,0)",
+          "(1,0)"
+        ],
+        [
+          "(2,2)",
+          "(1,2)"
+        ]
+      ]
+    },
+    "director_views": {
+      "D1": {
+        "row_0": [
+          {
+            "color": "red",
+            "size": 1
+          },
+          {
+            "color": "blue",
+            "size": 1
+          },
+          {
+            "color": "yellow",
+            "size": 1
+          }
+        ],
+        "row_1": [
+          {
+            "color": "blue",
+            "size": 1
+          },
+          {
+            "color": "red",
+            "size": 2
+          },
+          {
+            "color": "red",
+            "size": 2
+          }
+        ],
+        "row_2": [
+          {
+            "color": "orange",
+            "size": 1
+          },
+          {
+            "color": "orange",
+            "size": 2
+          },
+          {
+            "color": "orange",
+            "size": 2
+          }
+        ]
+      },
+      "D2": {
+        "row_0": [
+          {
+            "color": "red",
+            "size": 1
+          },
+          {
+            "color": "green",
+            "size": 1
+          },
+          {
+            "color": "blue",
+            "size": 1
+          }
+        ],
+        "row_1": [
+          {
+            "color": "blue",
+            "size": 1
+          },
+          {
+            "color": "yellow",
+            "size": 1
+          },
+          {
+            "color": "orange",
+            "size": 1
+          }
+        ],
+        "row_2": [
+          {
+            "color": "orange",
+            "size": 1
+          },
+          {
+            "color": "green",
+            "size": 1
+          },
+          {
+            "color": "green",
+            "size": 1
+          }
+        ]
+      },
+      "D3": {
+        "row_0": [
+          {
+            "color": "blue",
+            "size": 2
+          },
+          {
+            "color": "blue",
+            "size": 2
+          },
+          {
+            "color": "blue",
+            "size": 1
+          }
+        ],
+        "row_1": [
+          {
+            "color": "orange",
+            "size": 2
+          },
+          {
+            "color": "orange",
+            "size": 2
+          },
+          {
+            "color": "green",
+            "size": 1
+          }
+        ],
+        "row_2": [
+          {
+            "color": "green",
+            "size": 1
+          },
+          {
+            "color": "blue",
+            "size": 2
+          },
+          {
+            "color": "blue",
+            "size": 2
+          }
+        ]
+      }
+    },
+    "metadata": {
+      "total_blocks": 21,
+      "filled_positions": 7,
+      "optional_heights": {
+        "(1,1)": 0,
+        "(2,1)": 0
+      }
+    }
+  },
+  {
+    "id": "craft-20-003",
+    "complexity": "simple",
+    "structure": {
+      "(0,0)": [
+        "ol",
+        "rs",
+        "os"
+      ],
+      "(0,1)": [
+        "rs",
+        "os",
+        "ol"
+      ],
+      "(0,2)": [
+        "ys",
+        "os",
+        "ol"
+      ],
+      "(1,0)": [
+        "ol",
+        "os",
+        "bs"
+      ],
+      "(1,1)": [],
+      "(1,2)": [
+        "gl",
+        "bs",
+        "os"
+      ],
+      "(2,0)": [
+        "os",
+        "gs",
+        "ys"
+      ],
+      "(2,1)": [],
+      "(2,2)": [
+        "gl",
+        "bs",
+        "ys"
+      ]
+    },
+    "spans": {
+      "0": [
+        [
+          "(0,0)",
+          "(1,0)"
+        ],
+        [
+          "(2,2)",
+          "(1,2)"
+        ]
+      ],
+      "1": [],
+      "2": [
+        [
+          "(0,1)",
+          "(0,2)"
+        ]
+      ]
+    },
+    "director_views": {
+      "D1": {
+        "row_0": [
+          {
+            "color": "orange",
+            "size": 2
+          },
+          {
+            "color": "orange",
+            "size": 2
+          },
+          {
+            "color": "orange",
+            "size": 1
+          }
+        ],
+        "row_1": [
+          {
+            "color": "red",
+            "size": 1
+          },
+          {
+            "color": "orange",
+            "size": 1
+          },
+          {
+            "color": "green",
+            "size": 1
+          }
+        ],
+        "row_2": [
+          {
+            "color": "orange",
+            "size": 1
+          },
+          {
+            "color": "blue",
+            "size": 1
+          },
+          {
+            "color": "yellow",
+            "size": 1
+          }
+        ]
+      },
+      "D2": {
+        "row_0": [
+          {
+            "color": "orange",
+            "size": 1
+          },
+          {
+            "color": "red",
+            "size": 1
+          },
+          {
+            "color": "yellow",
+            "size": 1
+          }
+        ],
+        "row_1": [
+          {
+            "color": "red",
+            "size": 1
+          },
+          {
+            "color": "orange",
+            "size": 1
+          },
+          {
+            "color": "orange",
+            "size": 1
+          }
+        ],
+        "row_2": [
+          {
+            "color": "orange",
+            "size": 1
+          },
+          {
+            "color": "orange",
+            "size": 2
+          },
+          {
+            "color": "orange",
+            "size": 2
+          }
+        ]
+      },
+      "D3": {
+        "row_0": [
+          {
+            "color": "yellow",
+            "size": 1
+          },
+          {
+            "color": "green",
+            "size": 2
+          },
+          {
+            "color": "green",
+            "size": 2
+          }
+        ],
+        "row_1": [
+          {
+            "color": "orange",
+            "size": 1
+          },
+          {
+            "color": "blue",
+            "size": 1
+          },
+          {
+            "color": "blue",
+            "size": 1
+          }
+        ],
+        "row_2": [
+          {
+            "color": "orange",
+            "size": 1
+          },
+          {
+            "color": "orange",
+            "size": 1
+          },
+          {
+            "color": "yellow",
+            "size": 1
+          }
+        ]
+      }
+    },
+    "metadata": {
+      "total_blocks": 21,
+      "filled_positions": 7,
+      "optional_heights": {
+        "(1,1)": 0,
+        "(2,1)": 0
+      }
+    }
+  },
+  {
+    "id": "craft-20-004",
+    "complexity": "simple",
+    "structure": {
+      "(0,0)": [
+        "ol",
+        "os",
+        "gl"
+      ],
+      "(0,1)": [
+        "gl",
+        "bs",
+        "gl"
+      ],
+      "(0,2)": [
+        "gl",
+        "ys",
+        "gl"
+      ],
+      "(1,0)": [
+        "ol",
+        "bs",
+        "ol"
+      ],
+      "(1,1)": [],
+      "(1,2)": [
+        "yl",
+        "rl",
+        "gl"
+      ],
+      "(2,0)": [
+        "ys",
+        "rs",
+        "ol"
+      ],
+      "(2,1)": [],
+      "(2,2)": [
+        "yl",
+        "rl",
+        "ys"
+      ]
+    },
+    "spans": {
+      "0": [
+        [
+          "(2,2)",
+          "(1,2)"
+        ],
+        [
+          "(0,1)",
+          "(0,2)"
+        ],
+        [
+          "(0,0)",
+          "(1,0)"
+        ]
+      ],
+      "1": [
+        [
+          "(1,2)",
+          "(2,2)"
+        ]
+      ],
+      "2": [
+        [
+          "(0,0)",
+          "(0,1)"
+        ],
+        [
+          "(1,2)",
+          "(0,2)"
+        ],
+        [
+          "(2,0)",
+          "(1,0)"
+        ]
+      ]
+    },
+    "director_views": {
+      "D1": {
+        "row_0": [
+          {
+            "color": "orange",
+            "size": 2
+          },
+          {
+            "color": "orange",
+            "size": 2
+          },
+          {
+            "color": "yellow",
+            "size": 1
+          }
+        ],
+        "row_1": [
+          {
+            "color": "orange",
+            "size": 1
+          },
+          {
+            "color": "blue",
+            "size": 1
+          },
+          {
+            "color": "red",
+            "size": 1
+          }
+        ],
+        "row_2": [
+          {
+            "color": "green",
+            "size": 1
+          },
+          {
+            "color": "orange",
+            "size": 2
+          },
+          {
+            "color": "orange",
+            "size": 2
+          }
+        ]
+      },
+      "D2": {
+        "row_0": [
+          {
+            "color": "orange",
+            "size": 1
+          },
+          {
+            "color": "green",
+            "size": 2
+          },
+          {
+            "color": "green",
+            "size": 2
+          }
+        ],
+        "row_1": [
+          {
+            "color": "orange",
+            "size": 1
+          },
+          {
+            "color": "blue",
+            "size": 1
+          },
+          {
+            "color": "yellow",
+            "size": 1
+          }
+        ],
+        "row_2": [
+          {
+            "color": "green",
+            "size": 2
+          },
+          {
+            "color": "green",
+            "size": 2
+          },
+          {
+            "color": "green",
+            "size": 1
+          }
+        ]
+      },
+      "D3": {
+        "row_0": [
+          {
+            "color": "green",
+            "size": 1
+          },
+          {
+            "color": "yellow",
+            "size": 2
+          },
+          {
+            "color": "yellow",
+            "size": 2
+          }
+        ],
+        "row_1": [
+          {
+            "color": "yellow",
+            "size": 1
+          },
+          {
+            "color": "red",
+            "size": 2
+          },
+          {
+            "color": "red",
+            "size": 2
+          }
+        ],
+        "row_2": [
+          {
+            "color": "green",
+            "size": 2
+          },
+          {
+            "color": "green",
+            "size": 2
+          },
+          {
+            "color": "yellow",
+            "size": 1
+          }
+        ]
+      }
+    },
+    "metadata": {
+      "total_blocks": 21,
+      "filled_positions": 7,
+      "optional_heights": {
+        "(1,1)": 0,
+        "(2,1)": 0
+      }
+    }
+  },
+  {
+    "id": "craft-20-005",
+    "complexity": "simple",
+    "structure": {
+      "(0,0)": [
+        "gl",
+        "bl",
+        "rs"
+      ],
+      "(0,1)": [
+        "os",
+        "gs",
+        "os"
+      ],
+      "(0,2)": [
+        "gl",
+        "ys",
+        "os"
+      ],
+      "(1,0)": [
+        "gl",
+        "bl",
+        "yl"
+      ],
+      "(1,1)": [],
+      "(1,2)": [
+        "gl",
+        "ol",
+        "gl"
+      ],
+      "(2,0)": [
+        "ys",
+        "gs",
+        "yl"
+      ],
+      "(2,1)": [],
+      "(2,2)": [
+        "bs",
+        "ol",
+        "gl"
+      ]
+    },
+    "spans": {
+      "0": [
+        [
+          "(0,0)",
+          "(1,0)"
+        ],
+        [
+          "(1,2)",
+          "(0,2)"
+        ]
+      ],
+      "1": [
+        [
+          "(0,0)",
+          "(1,0)"
+        ],
+        [
+          "(1,2)",
+          "(2,2)"
+        ]
+      ],
+      "2": [
+        [
+          "(1,0)",
+          "(2,0)"
+        ],
+        [
+          "(1,2)",
+          "(2,2)"
+        ]
+      ]
+    },
+    "director_views": {
+      "D1": {
+        "row_0": [
+          {
+            "color": "green",
+            "size": 2
+          },
+          {
+            "color": "green",
+            "size": 2
+          },
+          {
+            "color": "yellow",
+            "size": 1
+          }
+        ],
+        "row_1": [
+          {
+            "color": "blue",
+            "size": 2
+          },
+          {
+            "color": "blue",
+            "size": 2
+          },
+          {
+            "color": "green",
+            "size": 1
+          }
+        ],
+        "row_2": [
+          {
+            "color": "red",
+            "size": 1
+          },
+          {
+            "color": "yellow",
+            "size": 2
+          },
+          {
+            "color": "yellow",
+            "size": 2
+          }
+        ]
+      },
+      "D2": {
+        "row_0": [
+          {
+            "color": "green",
+            "size": 1
+          },
+          {
+            "color": "orange",
+            "size": 1
+          },
+          {
+            "color": "green",
+            "size": 1
+          }
+        ],
+        "row_1": [
+          {
+            "color": "blue",
+            "size": 1
+          },
+          {
+            "color": "green",
+            "size": 1
+          },
+          {
+            "color": "yellow",
+            "size": 1
+          }
+        ],
+        "row_2": [
+          {
+            "color": "red",
+            "size": 1
+          },
+          {
+            "color": "orange",
+            "size": 1
+          },
+          {
+            "color": "orange",
+            "size": 1
+          }
+        ]
+      },
+      "D3": {
+        "row_0": [
+          {
+            "color": "green",
+            "size": 2
+          },
+          {
+            "color": "green",
+            "size": 2
+          },
+          {
+            "color": "blue",
+            "size": 1
+          }
+        ],
+        "row_1": [
+          {
+            "color": "yellow",
+            "size": 1
+          },
+          {
+            "color": "orange",
+            "size": 2
+          },
+          {
+            "color": "orange",
+            "size": 2
+          }
+        ],
+        "row_2": [
+          {
+            "color": "orange",
+            "size": 1
+          },
+          {
+            "color": "green",
+            "size": 2
+          },
+          {
+            "color": "green",
+            "size": 2
+          }
+        ]
+      }
+    },
+    "metadata": {
+      "total_blocks": 21,
+      "filled_positions": 7,
+      "optional_heights": {
+        "(1,1)": 0,
+        "(2,1)": 0
+      }
+    }
+  },
+  {
+    "id": "craft-20-006",
+    "complexity": "simple",
+    "structure": {
+      "(0,0)": [
+        "gl",
+        "ol",
+        "rs"
+      ],
+      "(0,1)": [
+        "gl",
+        "os",
+        "rs"
+      ],
+      "(0,2)": [
+        "os",
+        "bl",
+        "gl"
+      ],
+      "(1,0)": [
+        "gl",
+        "ol",
+        "yl"
+      ],
+      "(1,1)": [],
+      "(1,2)": [
+        "yl",
+        "bl",
+        "gl"
+      ],
+      "(2,0)": [
+        "gl",
+        "os",
+        "yl"
+      ],
+      "(2,1)": [],
+      "(2,2)": [
+        "yl",
+        "os",
+        "rs"
+      ]
+    },
+    "spans": {
+      "0": [
+        [
+          "(2,2)",
+          "(1,2)"
+        ],
+        [
+          "(0,0)",
+          "(0,1)"
+        ],
+        [
+          "(1,0)",
+          "(2,0)"
+        ]
+      ],
+      "1": [
+        [
+          "(0,0)",
+          "(1,0)"
+        ],
+        [
+          "(0,2)",
+          "(1,2)"
+        ]
+      ],
+      "2": [
+        [
+          "(2,0)",
+          "(1,0)"
+        ],
+        [
+          "(0,2)",
+          "(1,2)"
+        ]
+      ]
+    },
+    "director_views": {
+      "D1": {
+        "row_0": [
+          {
+            "color": "green",
+            "size": 1
+          },
+          {
+            "color": "green",
+            "size": 2
+          },
+          {
+            "color": "green",
+            "size": 2
+          }
+        ],
+        "row_1": [
+          {
+            "color": "orange",
+            "size": 2
+          },
+          {
+            "color": "orange",
+            "size": 2
+          },
+          {
+            "color": "orange",
+            "size": 1
+          }
+        ],
+        "row_2": [
+          {
+            "color": "red",
+            "size": 1
+          },
+          {
+            "color": "yellow",
+            "size": 2
+          },
+          {
+            "color": "yellow",
+            "size": 2
+          }
+        ]
+      },
+      "D2": {
+        "row_0": [
+          {
+            "color": "green",
+            "size": 2
+          },
+          {
+            "color": "green",
+            "size": 2
+          },
+          {
+            "color": "orange",
+            "size": 1
+          }
+        ],
+        "row_1": [
+          {
+            "color": "orange",
+            "size": 1
+          },
+          {
+            "color": "orange",
+            "size": 1
+          },
+          {
+            "color": "blue",
+            "size": 1
+          }
+        ],
+        "row_2": [
+          {
+            "color": "red",
+            "size": 1
+          },
+          {
+            "color": "red",
+            "size": 1
+          },
+          {
+            "color": "green",
+            "size": 1
+          }
+        ]
+      },
+      "D3": {
+        "row_0": [
+          {
+            "color": "orange",
+            "size": 1
+          },
+          {
+            "color": "yellow",
+            "size": 2
+          },
+          {
+            "color": "yellow",
+            "size": 2
+          }
+        ],
+        "row_1": [
+          {
+            "color": "blue",
+            "size": 2
+          },
+          {
+            "color": "blue",
+            "size": 2
+          },
+          {
+            "color": "orange",
+            "size": 1
+          }
+        ],
+        "row_2": [
+          {
+            "color": "green",
+            "size": 2
+          },
+          {
+            "color": "green",
+            "size": 2
+          },
+          {
+            "color": "red",
+            "size": 1
+          }
+        ]
+      }
+    },
+    "metadata": {
+      "total_blocks": 21,
+      "filled_positions": 7,
+      "optional_heights": {
+        "(1,1)": 0,
+        "(2,1)": 0
+      }
+    }
+  },
+  {
+    "id": "craft-20-007",
+    "complexity": "simple",
+    "structure": {
+      "(0,0)": [
+        "ol",
+        "bl",
+        "rl"
+      ],
+      "(0,1)": [
+        "ol",
+        "bl",
+        "rl"
+      ],
+      "(0,2)": [
+        "ol",
+        "gs",
+        "bl"
+      ],
+      "(1,0)": [
+        "gs",
+        "gl",
+        "yl"
+      ],
+      "(1,1)": [],
+      "(1,2)": [
+        "ol",
+        "bs",
+        "bl"
+      ],
+      "(2,0)": [
+        "ys",
+        "gl",
+        "yl"
+      ],
+      "(2,1)": [],
+      "(2,2)": [
+        "ys",
+        "bs",
+        "ys"
+      ]
+    },
+    "spans": {
+      "0": [
+        [
+          "(0,0)",
+          "(0,1)"
+        ],
+        [
+          "(1,2)",
+          "(0,2)"
+        ]
+      ],
+      "1": [
+        [
+          "(1,0)",
+          "(2,0)"
+        ],
+        [
+          "(0,1)",
+          "(0,0)"
+        ]
+      ],
+      "2": [
+        [
+          "(2,0)",
+          "(1,0)"
+        ],
+        [
+          "(0,0)",
+          "(0,1)"
+        ],
+        [
+          "(1,2)",
+          "(0,2)"
+        ]
+      ]
+    },
+    "director_views": {
+      "D1": {
+        "row_0": [
+          {
+            "color": "orange",
+            "size": 1
+          },
+          {
+            "color": "green",
+            "size": 1
+          },
+          {
+            "color": "yellow",
+            "size": 1
+          }
+        ],
+        "row_1": [
+          {
+            "color": "blue",
+            "size": 1
+          },
+          {
+            "color": "green",
+            "size": 2
+          },
+          {
+            "color": "green",
+            "size": 2
+          }
+        ],
+        "row_2": [
+          {
+            "color": "red",
+            "size": 1
+          },
+          {
+            "color": "yellow",
+            "size": 2
+          },
+          {
+            "color": "yellow",
+            "size": 2
+          }
+        ]
+      },
+      "D2": {
+        "row_0": [
+          {
+            "color": "orange",
+            "size": 2
+          },
+          {
+            "color": "orange",
+            "size": 2
+          },
+          {
+            "color": "orange",
+            "size": 1
+          }
+        ],
+        "row_1": [
+          {
+            "color": "blue",
+            "size": 2
+          },
+          {
+            "color": "blue",
+            "size": 2
+          },
+          {
+            "color": "green",
+            "size": 1
+          }
+        ],
+        "row_2": [
+          {
+            "color": "red",
+            "size": 2
+          },
+          {
+            "color": "red",
+            "size": 2
+          },
+          {
+            "color": "blue",
+            "size": 1
+          }
+        ]
+      },
+      "D3": {
+        "row_0": [
+          {
+            "color": "orange",
+            "size": 2
+          },
+          {
+            "color": "orange",
+            "size": 2
+          },
+          {
+            "color": "yellow",
+            "size": 1
+          }
+        ],
+        "row_1": [
+          {
+            "color": "green",
+            "size": 1
+          },
+          {
+            "color": "blue",
+            "size": 1
+          },
+          {
+            "color": "blue",
+            "size": 1
+          }
+        ],
+        "row_2": [
+          {
+            "color": "blue",
+            "size": 2
+          },
+          {
+            "color": "blue",
+            "size": 2
+          },
+          {
+            "color": "yellow",
+            "size": 1
+          }
+        ]
+      }
+    },
+    "metadata": {
+      "total_blocks": 21,
+      "filled_positions": 7,
+      "optional_heights": {
+        "(1,1)": 0,
+        "(2,1)": 0
+      }
+    }
+  },
+  {
+    "id": "craft-20-008",
+    "complexity": "simple",
+    "structure": {
+      "(0,0)": [
+        "gl",
+        "ol",
+        "gs"
+      ],
+      "(0,1)": [
+        "gl",
+        "yl",
+        "ys"
+      ],
+      "(0,2)": [
+        "ol",
+        "yl",
+        "rs"
+      ],
+      "(1,0)": [
+        "rs",
+        "ol",
+        "bl"
+      ],
+      "(1,1)": [],
+      "(1,2)": [
+        "ol",
+        "bs",
+        "bl"
+      ],
+      "(2,0)": [
+        "rs",
+        "os",
+        "bl"
+      ],
+      "(2,1)": [],
+      "(2,2)": [
+        "rs",
+        "bs",
+        "bl"
+      ]
+    },
+    "spans": {
+      "0": [
+        [
+          "(1,2)",
+          "(0,2)"
+        ],
+        [
+          "(0,0)",
+          "(0,1)"
+        ]
+      ],
+      "1": [
+        [
+          "(0,1)",
+          "(0,2)"
+        ],
+        [
+          "(1,0)",
+          "(0,0)"
+        ]
+      ],
+      "2": [
+        [
+          "(2,0)",
+          "(1,0)"
+        ],
+        [
+          "(2,2)",
+          "(1,2)"
+        ]
+      ]
+    },
+    "director_views": {
+      "D1": {
+        "row_0": [
+          {
+            "color": "green",
+            "size": 1
+          },
+          {
+            "color": "red",
+            "size": 1
+          },
+          {
+            "color": "red",
+            "size": 1
+          }
+        ],
+        "row_1": [
+          {
+            "color": "orange",
+            "size": 2
+          },
+          {
+            "color": "orange",
+            "size": 2
+          },
+          {
+            "color": "orange",
+            "size": 1
+          }
+        ],
+        "row_2": [
+          {
+            "color": "green",
+            "size": 1
+          },
+          {
+            "color": "blue",
+            "size": 2
+          },
+          {
+            "color": "blue",
+            "size": 2
+          }
+        ]
+      },
+      "D2": {
+        "row_0": [
+          {
+            "color": "green",
+            "size": 2
+          },
+          {
+            "color": "green",
+            "size": 2
+          },
+          {
+            "color": "orange",
+            "size": 1
+          }
+        ],
+        "row_1": [
+          {
+            "color": "orange",
+            "size": 1
+          },
+          {
+            "color": "yellow",
+            "size": 2
+          },
+          {
+            "color": "yellow",
+            "size": 2
+          }
+        ],
+        "row_2": [
+          {
+            "color": "green",
+            "size": 1
+          },
+          {
+            "color": "yellow",
+            "size": 1
+          },
+          {
+            "color": "red",
+            "size": 1
+          }
+        ]
+      },
+      "D3": {
+        "row_0": [
+          {
+            "color": "orange",
+            "size": 2
+          },
+          {
+            "color": "orange",
+            "size": 2
+          },
+          {
+            "color": "red",
+            "size": 1
+          }
+        ],
+        "row_1": [
+          {
+            "color": "yellow",
+            "size": 1
+          },
+          {
+            "color": "blue",
+            "size": 1
+          },
+          {
+            "color": "blue",
+            "size": 1
+          }
+        ],
+        "row_2": [
+          {
+            "color": "red",
+            "size": 1
+          },
+          {
+            "color": "blue",
+            "size": 2
+          },
+          {
+            "color": "blue",
+            "size": 2
+          }
+        ]
+      }
+    },
+    "metadata": {
+      "total_blocks": 21,
+      "filled_positions": 7,
+      "optional_heights": {
+        "(1,1)": 0,
+        "(2,1)": 0
+      }
+    }
+  },
+  {
+    "id": "craft-20-009",
+    "complexity": "simple",
+    "structure": {
+      "(0,0)": [
+        "bs",
+        "os",
+        "rs"
+      ],
+      "(0,1)": [
+        "ys",
+        "bs",
+        "os"
+      ],
+      "(0,2)": [
+        "yl",
+        "bs",
+        "gl"
+      ],
+      "(1,0)": [
+        "ol",
+        "bs",
+        "gs"
+      ],
+      "(1,1)": [],
+      "(1,2)": [
+        "yl",
+        "gs",
+        "gl"
+      ],
+      "(2,0)": [
+        "ol",
+        "bs",
+        "ys"
+      ],
+      "(2,1)": [],
+      "(2,2)": [
+        "os",
+        "bs",
+        "ys"
+      ]
+    },
+    "spans": {
+      "0": [
+        [
+          "(0,2)",
+          "(1,2)"
+        ],
+        [
+          "(1,0)",
+          "(2,0)"
+        ]
+      ],
+      "1": [],
+      "2": [
+        [
+          "(1,2)",
+          "(0,2)"
+        ]
+      ]
+    },
+    "director_views": {
+      "D1": {
+        "row_0": [
+          {
+            "color": "blue",
+            "size": 1
+          },
+          {
+            "color": "orange",
+            "size": 2
+          },
+          {
+            "color": "orange",
+            "size": 2
+          }
+        ],
+        "row_1": [
+          {
+            "color": "orange",
+            "size": 1
+          },
+          {
+            "color": "blue",
+            "size": 1
+          },
+          {
+            "color": "blue",
+            "size": 1
+          }
+        ],
+        "row_2": [
+          {
+            "color": "red",
+            "size": 1
+          },
+          {
+            "color": "green",
+            "size": 1
+          },
+          {
+            "color": "yellow",
+            "size": 1
+          }
+        ]
+      },
+      "D2": {
+        "row_0": [
+          {
+            "color": "blue",
+            "size": 1
+          },
+          {
+            "color": "yellow",
+            "size": 1
+          },
+          {
+            "color": "yellow",
+            "size": 1
+          }
+        ],
+        "row_1": [
+          {
+            "color": "orange",
+            "size": 1
+          },
+          {
+            "color": "blue",
+            "size": 1
+          },
+          {
+            "color": "blue",
+            "size": 1
+          }
+        ],
+        "row_2": [
+          {
+            "color": "red",
+            "size": 1
+          },
+          {
+            "color": "orange",
+            "size": 1
+          },
+          {
+            "color": "green",
+            "size": 1
+          }
+        ]
+      },
+      "D3": {
+        "row_0": [
+          {
+            "color": "yellow",
+            "size": 2
+          },
+          {
+            "color": "yellow",
+            "size": 2
+          },
+          {
+            "color": "orange",
+            "size": 1
+          }
+        ],
+        "row_1": [
+          {
+            "color": "blue",
+            "size": 1
+          },
+          {
+            "color": "green",
+            "size": 1
+          },
+          {
+            "color": "blue",
+            "size": 1
+          }
+        ],
+        "row_2": [
+          {
+            "color": "green",
+            "size": 2
+          },
+          {
+            "color": "green",
+            "size": 2
+          },
+          {
+            "color": "yellow",
+            "size": 1
+          }
+        ]
+      }
+    },
+    "metadata": {
+      "total_blocks": 21,
+      "filled_positions": 7,
+      "optional_heights": {
+        "(1,1)": 0,
+        "(2,1)": 0
+      }
+    }
+  },
+  {
+    "id": "craft-20-010",
+    "complexity": "simple",
+    "structure": {
+      "(0,0)": [
+        "rs",
+        "rl",
+        "gs"
+      ],
+      "(0,1)": [
+        "os",
+        "rl",
+        "ys"
+      ],
+      "(0,2)": [
+        "bs",
+        "ys",
+        "os"
+      ],
+      "(1,0)": [
+        "rl",
+        "bl",
+        "bs"
+      ],
+      "(1,1)": [],
+      "(1,2)": [
+        "rl",
+        "yl",
+        "rs"
+      ],
+      "(2,0)": [
+        "rl",
+        "bl",
+        "ys"
+      ],
+      "(2,1)": [],
+      "(2,2)": [
+        "rl",
+        "yl",
+        "rs"
+      ]
+    },
+    "spans": {
+      "0": [
+        [
+          "(2,2)",
+          "(1,2)"
+        ],
+        [
+          "(2,0)",
+          "(1,0)"
+        ]
+      ],
+      "1": [
+        [
+          "(1,0)",
+          "(2,0)"
+        ],
+        [
+          "(0,1)",
+          "(0,0)"
+        ],
+        [
+          "(2,2)",
+          "(1,2)"
+        ]
+      ],
+      "2": []
+    },
+    "director_views": {
+      "D1": {
+        "row_0": [
+          {
+            "color": "red",
+            "size": 1
+          },
+          {
+            "color": "red",
+            "size": 2
+          },
+          {
+            "color": "red",
+            "size": 2
+          }
+        ],
+        "row_1": [
+          {
+            "color": "red",
+            "size": 1
+          },
+          {
+            "color": "blue",
+            "size": 2
+          },
+          {
+            "color": "blue",
+            "size": 2
+          }
+        ],
+        "row_2": [
+          {
+            "color": "green",
+            "size": 1
+          },
+          {
+            "color": "blue",
+            "size": 1
+          },
+          {
+            "color": "yellow",
+            "size": 1
+          }
+        ]
+      },
+      "D2": {
+        "row_0": [
+          {
+            "color": "red",
+            "size": 1
+          },
+          {
+            "color": "orange",
+            "size": 1
+          },
+          {
+            "color": "blue",
+            "size": 1
+          }
+        ],
+        "row_1": [
+          {
+            "color": "red",
+            "size": 2
+          },
+          {
+            "color": "red",
+            "size": 2
+          },
+          {
+            "color": "yellow",
+            "size": 1
+          }
+        ],
+        "row_2": [
+          {
+            "color": "green",
+            "size": 1
+          },
+          {
+            "color": "yellow",
+            "size": 1
+          },
+          {
+            "color": "orange",
+            "size": 1
+          }
+        ]
+      },
+      "D3": {
+        "row_0": [
+          {
+            "color": "blue",
+            "size": 1
+          },
+          {
+            "color": "red",
+            "size": 2
+          },
+          {
+            "color": "red",
+            "size": 2
+          }
+        ],
+        "row_1": [
+          {
+            "color": "yellow",
+            "size": 1
+          },
+          {
+            "color": "yellow",
+            "size": 2
+          },
+          {
+            "color": "yellow",
+            "size": 2
+          }
+        ],
+        "row_2": [
+          {
+            "color": "orange",
+            "size": 1
+          },
+          {
+            "color": "red",
+            "size": 1
+          },
+          {
+            "color": "red",
+            "size": 1
+          }
+        ]
+      }
+    },
+    "metadata": {
+      "total_blocks": 21,
+      "filled_positions": 7,
+      "optional_heights": {
+        "(1,1)": 0,
+        "(2,1)": 0
+      }
+    }
+  },
+  {
+    "id": "craft-20-011",
+    "complexity": "simple",
+    "structure": {
+      "(0,0)": [
+        "os",
+        "rl",
+        "ys"
+      ],
+      "(0,1)": [
+        "ys",
+        "rl",
+        "gs"
+      ],
+      "(0,2)": [
+        "bl",
+        "gl",
+        "rs"
+      ],
+      "(1,0)": [
+        "ys",
+        "bs",
+        "os"
+      ],
+      "(1,1)": [],
+      "(1,2)": [
+        "bl",
+        "gl",
+        "bs"
+      ],
+      "(2,0)": [
+        "bs",
+        "gs",
+        "bs"
+      ],
+      "(2,1)": [],
+      "(2,2)": [
+        "gs",
+        "ys",
+        "rs"
+      ]
+    },
+    "spans": {
+      "0": [
+        [
+          "(1,2)",
+          "(0,2)"
+        ]
+      ],
+      "1": [
+        [
+          "(0,0)",
+          "(0,1)"
+        ],
+        [
+          "(0,2)",
+          "(1,2)"
+        ]
+      ],
+      "2": []
+    },
+    "director_views": {
+      "D1": {
+        "row_0": [
+          {
+            "color": "orange",
+            "size": 1
+          },
+          {
+            "color": "yellow",
+            "size": 1
+          },
+          {
+            "color": "blue",
+            "size": 1
+          }
+        ],
+        "row_1": [
+          {
+            "color": "red",
+            "size": 1
+          },
+          {
+            "color": "blue",
+            "size": 1
+          },
+          {
+            "color": "green",
+            "size": 1
+          }
+        ],
+        "row_2": [
+          {
+            "color": "yellow",
+            "size": 1
+          },
+          {
+            "color": "orange",
+            "size": 1
+          },
+          {
+            "color": "blue",
+            "size": 1
+          }
+        ]
+      },
+      "D2": {
+        "row_0": [
+          {
+            "color": "orange",
+            "size": 1
+          },
+          {
+            "color": "yellow",
+            "size": 1
+          },
+          {
+            "color": "blue",
+            "size": 1
+          }
+        ],
+        "row_1": [
+          {
+            "color": "red",
+            "size": 2
+          },
+          {
+            "color": "red",
+            "size": 2
+          },
+          {
+            "color": "green",
+            "size": 1
+          }
+        ],
+        "row_2": [
+          {
+            "color": "yellow",
+            "size": 1
+          },
+          {
+            "color": "green",
+            "size": 1
+          },
+          {
+            "color": "red",
+            "size": 1
+          }
+        ]
+      },
+      "D3": {
+        "row_0": [
+          {
+            "color": "blue",
+            "size": 2
+          },
+          {
+            "color": "blue",
+            "size": 2
+          },
+          {
+            "color": "green",
+            "size": 1
+          }
+        ],
+        "row_1": [
+          {
+            "color": "green",
+            "size": 2
+          },
+          {
+            "color": "green",
+            "size": 2
+          },
+          {
+            "color": "yellow",
+            "size": 1
+          }
+        ],
+        "row_2": [
+          {
+            "color": "red",
+            "size": 1
+          },
+          {
+            "color": "blue",
+            "size": 1
+          },
+          {
+            "color": "red",
+            "size": 1
+          }
+        ]
+      }
+    },
+    "metadata": {
+      "total_blocks": 21,
+      "filled_positions": 7,
+      "optional_heights": {
+        "(1,1)": 0,
+        "(2,1)": 0
+      }
+    }
+  },
+  {
+    "id": "craft-20-012",
+    "complexity": "simple",
+    "structure": {
+      "(0,0)": [
+        "ol",
+        "ys",
+        "rs"
+      ],
+      "(0,1)": [
+        "gl",
+        "ol",
+        "bl"
+      ],
+      "(0,2)": [
+        "gl",
+        "ol",
+        "bl"
+      ],
+      "(1,0)": [
+        "ol",
+        "ys",
+        "os"
+      ],
+      "(1,1)": [],
+      "(1,2)": [
+        "rs",
+        "ys",
+        "os"
+      ],
+      "(2,0)": [
+        "os",
+        "rs",
+        "os"
+      ],
+      "(2,1)": [],
+      "(2,2)": [
+        "rs",
+        "os",
+        "rs"
+      ]
+    },
+    "spans": {
+      "0": [
+        [
+          "(0,0)",
+          "(1,0)"
+        ],
+        [
+          "(0,2)",
+          "(0,1)"
+        ]
+      ],
+      "1": [
+        [
+          "(0,2)",
+          "(0,1)"
+        ]
+      ],
+      "2": [
+        [
+          "(0,1)",
+          "(0,2)"
+        ]
+      ]
+    },
+    "director_views": {
+      "D1": {
+        "row_0": [
+          {
+            "color": "orange",
+            "size": 2
+          },
+          {
+            "color": "orange",
+            "size": 2
+          },
+          {
+            "color": "orange",
+            "size": 1
+          }
+        ],
+        "row_1": [
+          {
+            "color": "yellow",
+            "size": 1
+          },
+          {
+            "color": "yellow",
+            "size": 1
+          },
+          {
+            "color": "red",
+            "size": 1
+          }
+        ],
+        "row_2": [
+          {
+            "color": "red",
+            "size": 1
+          },
+          {
+            "color": "orange",
+            "size": 1
+          },
+          {
+            "color": "orange",
+            "size": 1
+          }
+        ]
+      },
+      "D2": {
+        "row_0": [
+          {
+            "color": "orange",
+            "size": 1
+          },
+          {
+            "color": "green",
+            "size": 2
+          },
+          {
+            "color": "green",
+            "size": 2
+          }
+        ],
+        "row_1": [
+          {
+            "color": "yellow",
+            "size": 1
+          },
+          {
+            "color": "orange",
+            "size": 2
+          },
+          {
+            "color": "orange",
+            "size": 2
+          }
+        ],
+        "row_2": [
+          {
+            "color": "red",
+            "size": 1
+          },
+          {
+            "color": "blue",
+            "size": 2
+          },
+          {
+            "color": "blue",
+            "size": 2
+          }
+        ]
+      },
+      "D3": {
+        "row_0": [
+          {
+            "color": "green",
+            "size": 1
+          },
+          {
+            "color": "red",
+            "size": 1
+          },
+          {
+            "color": "red",
+            "size": 1
+          }
+        ],
+        "row_1": [
+          {
+            "color": "orange",
+            "size": 1
+          },
+          {
+            "color": "yellow",
+            "size": 1
+          },
+          {
+            "color": "orange",
+            "size": 1
+          }
+        ],
+        "row_2": [
+          {
+            "color": "blue",
+            "size": 1
+          },
+          {
+            "color": "orange",
+            "size": 1
+          },
+          {
+            "color": "red",
+            "size": 1
+          }
+        ]
+      }
+    },
+    "metadata": {
+      "total_blocks": 21,
+      "filled_positions": 7,
+      "optional_heights": {
+        "(1,1)": 0,
+        "(2,1)": 0
+      }
+    }
+  },
+  {
+    "id": "craft-20-013",
+    "complexity": "simple",
+    "structure": {
+      "(0,0)": [
+        "bl",
+        "ys",
+        "bs"
+      ],
+      "(0,1)": [
+        "gl",
+        "bl",
+        "rl"
+      ],
+      "(0,2)": [
+        "gl",
+        "bl",
+        "rl"
+      ],
+      "(1,0)": [
+        "bl",
+        "rl",
+        "gl"
+      ],
+      "(1,1)": [],
+      "(1,2)": [
+        "ys",
+        "bl",
+        "ys"
+      ],
+      "(2,0)": [
+        "os",
+        "rl",
+        "gl"
+      ],
+      "(2,1)": [],
+      "(2,2)": [
+        "os",
+        "bl",
+        "os"
+      ]
+    },
+    "spans": {
+      "0": [
+        [
+          "(0,1)",
+          "(0,2)"
+        ],
+        [
+          "(0,0)",
+          "(1,0)"
+        ]
+      ],
+      "1": [
+        [
+          "(2,2)",
+          "(1,2)"
+        ],
+        [
+          "(2,0)",
+          "(1,0)"
+        ],
+        [
+          "(0,2)",
+          "(0,1)"
+        ]
+      ],
+      "2": [
+        [
+          "(0,2)",
+          "(0,1)"
+        ],
+        [
+          "(1,0)",
+          "(2,0)"
+        ]
+      ]
+    },
+    "director_views": {
+      "D1": {
+        "row_0": [
+          {
+            "color": "blue",
+            "size": 2
+          },
+          {
+            "color": "blue",
+            "size": 2
+          },
+          {
+            "color": "orange",
+            "size": 1
+          }
+        ],
+        "row_1": [
+          {
+            "color": "yellow",
+            "size": 1
+          },
+          {
+            "color": "red",
+            "size": 2
+          },
+          {
+            "color": "red",
+            "size": 2
+          }
+        ],
+        "row_2": [
+          {
+            "color": "blue",
+            "size": 1
+          },
+          {
+            "color": "green",
+            "size": 2
+          },
+          {
+            "color": "green",
+            "size": 2
+          }
+        ]
+      },
+      "D2": {
+        "row_0": [
+          {
+            "color": "blue",
+            "size": 1
+          },
+          {
+            "color": "green",
+            "size": 2
+          },
+          {
+            "color": "green",
+            "size": 2
+          }
+        ],
+        "row_1": [
+          {
+            "color": "yellow",
+            "size": 1
+          },
+          {
+            "color": "blue",
+            "size": 2
+          },
+          {
+            "color": "blue",
+            "size": 2
+          }
+        ],
+        "row_2": [
+          {
+            "color": "blue",
+            "size": 1
+          },
+          {
+            "color": "red",
+            "size": 2
+          },
+          {
+            "color": "red",
+            "size": 2
+          }
+        ]
+      },
+      "D3": {
+        "row_0": [
+          {
+            "color": "green",
+            "size": 1
+          },
+          {
+            "color": "yellow",
+            "size": 1
+          },
+          {
+            "color": "orange",
+            "size": 1
+          }
+        ],
+        "row_1": [
+          {
+            "color": "blue",
+            "size": 1
+          },
+          {
+            "color": "blue",
+            "size": 2
+          },
+          {
+            "color": "blue",
+            "size": 2
+          }
+        ],
+        "row_2": [
+          {
+            "color": "red",
+            "size": 1
+          },
+          {
+            "color": "yellow",
+            "size": 1
+          },
+          {
+            "color": "orange",
+            "size": 1
+          }
+        ]
+      }
+    },
+    "metadata": {
+      "total_blocks": 21,
+      "filled_positions": 7,
+      "optional_heights": {
+        "(1,1)": 0,
+        "(2,1)": 0
+      }
+    }
+  },
+  {
+    "id": "craft-20-014",
+    "complexity": "simple",
+    "structure": {
+      "(0,0)": [
+        "gl",
+        "ol",
+        "yl"
+      ],
+      "(0,1)": [
+        "gl",
+        "ol",
+        "yl"
+      ],
+      "(0,2)": [
+        "gl",
+        "ys",
+        "bs"
+      ],
+      "(1,0)": [
+        "gl",
+        "os",
+        "rs"
+      ],
+      "(1,1)": [],
+      "(1,2)": [
+        "ys",
+        "yl",
+        "bl"
+      ],
+      "(2,0)": [
+        "os",
+        "rs",
+        "bs"
+      ],
+      "(2,1)": [],
+      "(2,2)": [
+        "gs",
+        "yl",
+        "bl"
+      ]
+    },
+    "spans": {
+      "0": [
+        [
+          "(0,1)",
+          "(0,2)"
+        ],
+        [
+          "(1,0)",
+          "(0,0)"
+        ]
+      ],
+      "1": [
+        [
+          "(0,1)",
+          "(0,0)"
+        ],
+        [
+          "(2,2)",
+          "(1,2)"
+        ]
+      ],
+      "2": [
+        [
+          "(2,2)",
+          "(1,2)"
+        ],
+        [
+          "(0,1)",
+          "(0,0)"
+        ]
+      ]
+    },
+    "director_views": {
+      "D1": {
+        "row_0": [
+          {
+            "color": "green",
+            "size": 2
+          },
+          {
+            "color": "green",
+            "size": 2
+          },
+          {
+            "color": "orange",
+            "size": 1
+          }
+        ],
+        "row_1": [
+          {
+            "color": "orange",
+            "size": 1
+          },
+          {
+            "color": "orange",
+            "size": 1
+          },
+          {
+            "color": "red",
+            "size": 1
+          }
+        ],
+        "row_2": [
+          {
+            "color": "yellow",
+            "size": 1
+          },
+          {
+            "color": "red",
+            "size": 1
+          },
+          {
+            "color": "blue",
+            "size": 1
+          }
+        ]
+      },
+      "D2": {
+        "row_0": [
+          {
+            "color": "green",
+            "size": 1
+          },
+          {
+            "color": "green",
+            "size": 2
+          },
+          {
+            "color": "green",
+            "size": 2
+          }
+        ],
+        "row_1": [
+          {
+            "color": "orange",
+            "size": 2
+          },
+          {
+            "color": "orange",
+            "size": 2
+          },
+          {
+            "color": "yellow",
+            "size": 1
+          }
+        ],
+        "row_2": [
+          {
+            "color": "yellow",
+            "size": 2
+          },
+          {
+            "color": "yellow",
+            "size": 2
+          },
+          {
+            "color": "blue",
+            "size": 1
+          }
+        ]
+      },
+      "D3": {
+        "row_0": [
+          {
+            "color": "green",
+            "size": 1
+          },
+          {
+            "color": "yellow",
+            "size": 1
+          },
+          {
+            "color": "green",
+            "size": 1
+          }
+        ],
+        "row_1": [
+          {
+            "color": "yellow",
+            "size": 1
+          },
+          {
+            "color": "yellow",
+            "size": 2
+          },
+          {
+            "color": "yellow",
+            "size": 2
+          }
+        ],
+        "row_2": [
+          {
+            "color": "blue",
+            "size": 1
+          },
+          {
+            "color": "blue",
+            "size": 2
+          },
+          {
+            "color": "blue",
+            "size": 2
+          }
+        ]
+      }
+    },
+    "metadata": {
+      "total_blocks": 21,
+      "filled_positions": 7,
+      "optional_heights": {
+        "(1,1)": 0,
+        "(2,1)": 0
+      }
+    }
+  },
+  {
+    "id": "craft-20-015",
+    "complexity": "simple",
+    "structure": {
+      "(0,0)": [
+        "rl",
+        "yl",
+        "gl"
+      ],
+      "(0,1)": [
+        "ys",
+        "yl",
+        "gl"
+      ],
+      "(0,2)": [
+        "bs",
+        "yl",
+        "rl"
+      ],
+      "(1,0)": [
+        "rl",
+        "os",
+        "bs"
+      ],
+      "(1,1)": [],
+      "(1,2)": [
+        "bl",
+        "yl",
+        "rl"
+      ],
+      "(2,0)": [
+        "os",
+        "rs",
+        "os"
+      ],
+      "(2,1)": [],
+      "(2,2)": [
+        "bl",
+        "ys",
+        "rs"
+      ]
+    },
+    "spans": {
+      "0": [
+        [
+          "(0,0)",
+          "(1,0)"
+        ],
+        [
+          "(2,2)",
+          "(1,2)"
+        ]
+      ],
+      "1": [
+        [
+          "(0,1)",
+          "(0,0)"
+        ],
+        [
+          "(0,2)",
+          "(1,2)"
+        ]
+      ],
+      "2": [
+        [
+          "(0,2)",
+          "(1,2)"
+        ],
+        [
+          "(0,0)",
+          "(0,1)"
+        ]
+      ]
+    },
+    "director_views": {
+      "D1": {
+        "row_0": [
+          {
+            "color": "red",
+            "size": 2
+          },
+          {
+            "color": "red",
+            "size": 2
+          },
+          {
+            "color": "orange",
+            "size": 1
+          }
+        ],
+        "row_1": [
+          {
+            "color": "yellow",
+            "size": 1
+          },
+          {
+            "color": "orange",
+            "size": 1
+          },
+          {
+            "color": "red",
+            "size": 1
+          }
+        ],
+        "row_2": [
+          {
+            "color": "green",
+            "size": 1
+          },
+          {
+            "color": "blue",
+            "size": 1
+          },
+          {
+            "color": "orange",
+            "size": 1
+          }
+        ]
+      },
+      "D2": {
+        "row_0": [
+          {
+            "color": "red",
+            "size": 1
+          },
+          {
+            "color": "yellow",
+            "size": 1
+          },
+          {
+            "color": "blue",
+            "size": 1
+          }
+        ],
+        "row_1": [
+          {
+            "color": "yellow",
+            "size": 2
+          },
+          {
+            "color": "yellow",
+            "size": 2
+          },
+          {
+            "color": "yellow",
+            "size": 1
+          }
+        ],
+        "row_2": [
+          {
+            "color": "green",
+            "size": 2
+          },
+          {
+            "color": "green",
+            "size": 2
+          },
+          {
+            "color": "red",
+            "size": 1
+          }
+        ]
+      },
+      "D3": {
+        "row_0": [
+          {
+            "color": "blue",
+            "size": 1
+          },
+          {
+            "color": "blue",
+            "size": 2
+          },
+          {
+            "color": "blue",
+            "size": 2
+          }
+        ],
+        "row_1": [
+          {
+            "color": "yellow",
+            "size": 2
+          },
+          {
+            "color": "yellow",
+            "size": 2
+          },
+          {
+            "color": "yellow",
+            "size": 1
+          }
+        ],
+        "row_2": [
+          {
+            "color": "red",
+            "size": 2
+          },
+          {
+            "color": "red",
+            "size": 2
+          },
+          {
+            "color": "red",
+            "size": 1
+          }
+        ]
+      }
+    },
+    "metadata": {
+      "total_blocks": 21,
+      "filled_positions": 7,
+      "optional_heights": {
+        "(1,1)": 0,
+        "(2,1)": 0
+      }
+    }
+  },
+  {
+    "id": "craft-20-016",
+    "complexity": "simple",
+    "structure": {
+      "(0,0)": [
+        "rs",
+        "bl",
+        "gl"
+      ],
+      "(0,1)": [
+        "os",
+        "bl",
+        "gl"
+      ],
+      "(0,2)": [
+        "ys",
+        "os",
+        "rs"
+      ],
+      "(1,0)": [
+        "rl",
+        "os",
+        "rs"
+      ],
+      "(1,1)": [],
+      "(1,2)": [
+        "rl",
+        "bs",
+        "bl"
+      ],
+      "(2,0)": [
+        "rl",
+        "bs",
+        "os"
+      ],
+      "(2,1)": [],
+      "(2,2)": [
+        "rl",
+        "ys",
+        "bl"
+      ]
+    },
+    "spans": {
+      "0": [
+        [
+          "(2,2)",
+          "(1,2)"
+        ],
+        [
+          "(2,0)",
+          "(1,0)"
+        ]
+      ],
+      "1": [
+        [
+          "(0,0)",
+          "(0,1)"
+        ]
+      ],
+      "2": [
+        [
+          "(0,0)",
+          "(0,1)"
+        ],
+        [
+          "(2,2)",
+          "(1,2)"
+        ]
+      ]
+    },
+    "director_views": {
+      "D1": {
+        "row_0": [
+          {
+            "color": "red",
+            "size": 1
+          },
+          {
+            "color": "red",
+            "size": 2
+          },
+          {
+            "color": "red",
+            "size": 2
+          }
+        ],
+        "row_1": [
+          {
+            "color": "blue",
+            "size": 1
+          },
+          {
+            "color": "orange",
+            "size": 1
+          },
+          {
+            "color": "blue",
+            "size": 1
+          }
+        ],
+        "row_2": [
+          {
+            "color": "green",
+            "size": 1
+          },
+          {
+            "color": "red",
+            "size": 1
+          },
+          {
+            "color": "orange",
+            "size": 1
+          }
+        ]
+      },
+      "D2": {
+        "row_0": [
+          {
+            "color": "red",
+            "size": 1
+          },
+          {
+            "color": "orange",
+            "size": 1
+          },
+          {
+            "color": "yellow",
+            "size": 1
+          }
+        ],
+        "row_1": [
+          {
+            "color": "blue",
+            "size": 2
+          },
+          {
+            "color": "blue",
+            "size": 2
+          },
+          {
+            "color": "orange",
+            "size": 1
+          }
+        ],
+        "row_2": [
+          {
+            "color": "green",
+            "size": 2
+          },
+          {
+            "color": "green",
+            "size": 2
+          },
+          {
+            "color": "red",
+            "size": 1
+          }
+        ]
+      },
+      "D3": {
+        "row_0": [
+          {
+            "color": "yellow",
+            "size": 1
+          },
+          {
+            "color": "red",
+            "size": 2
+          },
+          {
+            "color": "red",
+            "size": 2
+          }
+        ],
+        "row_1": [
+          {
+            "color": "orange",
+            "size": 1
+          },
+          {
+            "color": "blue",
+            "size": 1
+          },
+          {
+            "color": "yellow",
+            "size": 1
+          }
+        ],
+        "row_2": [
+          {
+            "color": "red",
+            "size": 1
+          },
+          {
+            "color": "blue",
+            "size": 2
+          },
+          {
+            "color": "blue",
+            "size": 2
+          }
+        ]
+      }
+    },
+    "metadata": {
+      "total_blocks": 21,
+      "filled_positions": 7,
+      "optional_heights": {
+        "(1,1)": 0,
+        "(2,1)": 0
+      }
+    }
+  },
+  {
+    "id": "craft-20-017",
+    "complexity": "simple",
+    "structure": {
+      "(0,0)": [
+        "os",
+        "yl",
+        "ys"
+      ],
+      "(0,1)": [
+        "rl",
+        "ys",
+        "bs"
+      ],
+      "(0,2)": [
+        "rl",
+        "rs",
+        "yl"
+      ],
+      "(1,0)": [
+        "gl",
+        "yl",
+        "gl"
+      ],
+      "(1,1)": [],
+      "(1,2)": [
+        "yl",
+        "bs",
+        "yl"
+      ],
+      "(2,0)": [
+        "gl",
+        "bs",
+        "gl"
+      ],
+      "(2,1)": [],
+      "(2,2)": [
+        "yl",
+        "bs",
+        "os"
+      ]
+    },
+    "spans": {
+      "0": [
+        [
+          "(2,2)",
+          "(1,2)"
+        ],
+        [
+          "(2,0)",
+          "(1,0)"
+        ],
+        [
+          "(0,2)",
+          "(0,1)"
+        ]
+      ],
+      "1": [
+        [
+          "(1,0)",
+          "(0,0)"
+        ]
+      ],
+      "2": [
+        [
+          "(0,2)",
+          "(1,2)"
+        ],
+        [
+          "(1,0)",
+          "(2,0)"
+        ]
+      ]
+    },
+    "director_views": {
+      "D1": {
+        "row_0": [
+          {
+            "color": "orange",
+            "size": 1
+          },
+          {
+            "color": "green",
+            "size": 2
+          },
+          {
+            "color": "green",
+            "size": 2
+          }
+        ],
+        "row_1": [
+          {
+            "color": "yellow",
+            "size": 2
+          },
+          {
+            "color": "yellow",
+            "size": 2
+          },
+          {
+            "color": "blue",
+            "size": 1
+          }
+        ],
+        "row_2": [
+          {
+            "color": "yellow",
+            "size": 1
+          },
+          {
+            "color": "green",
+            "size": 2
+          },
+          {
+            "color": "green",
+            "size": 2
+          }
+        ]
+      },
+      "D2": {
+        "row_0": [
+          {
+            "color": "orange",
+            "size": 1
+          },
+          {
+            "color": "red",
+            "size": 2
+          },
+          {
+            "color": "red",
+            "size": 2
+          }
+        ],
+        "row_1": [
+          {
+            "color": "yellow",
+            "size": 1
+          },
+          {
+            "color": "yellow",
+            "size": 1
+          },
+          {
+            "color": "red",
+            "size": 1
+          }
+        ],
+        "row_2": [
+          {
+            "color": "yellow",
+            "size": 1
+          },
+          {
+            "color": "blue",
+            "size": 1
+          },
+          {
+            "color": "yellow",
+            "size": 1
+          }
+        ]
+      },
+      "D3": {
+        "row_0": [
+          {
+            "color": "red",
+            "size": 1
+          },
+          {
+            "color": "yellow",
+            "size": 2
+          },
+          {
+            "color": "yellow",
+            "size": 2
+          }
+        ],
+        "row_1": [
+          {
+            "color": "red",
+            "size": 1
+          },
+          {
+            "color": "blue",
+            "size": 1
+          },
+          {
+            "color": "blue",
+            "size": 1
+          }
+        ],
+        "row_2": [
+          {
+            "color": "yellow",
+            "size": 2
+          },
+          {
+            "color": "yellow",
+            "size": 2
+          },
+          {
+            "color": "orange",
+            "size": 1
+          }
+        ]
+      }
+    },
+    "metadata": {
+      "total_blocks": 21,
+      "filled_positions": 7,
+      "optional_heights": {
+        "(1,1)": 0,
+        "(2,1)": 0
+      }
+    }
+  },
+  {
+    "id": "craft-20-018",
+    "complexity": "simple",
+    "structure": {
+      "(0,0)": [
+        "yl",
+        "gl",
+        "ol"
+      ],
+      "(0,1)": [
+        "rs",
+        "gl",
+        "ol"
+      ],
+      "(0,2)": [
+        "rl",
+        "gl",
+        "rs"
+      ],
+      "(1,0)": [
+        "yl",
+        "gl",
+        "gs"
+      ],
+      "(1,1)": [],
+      "(1,2)": [
+        "rl",
+        "gs",
+        "ys"
+      ],
+      "(2,0)": [
+        "ys",
+        "rs",
+        "bs"
+      ],
+      "(2,1)": [],
+      "(2,2)": [
+        "os",
+        "gs",
+        "os"
+      ]
+    },
+    "spans": {
+      "0": [
+        [
+          "(1,2)",
+          "(0,2)"
+        ],
+        [
+          "(1,0)",
+          "(0,0)"
+        ]
+      ],
+      "1": [
+        [
+          "(0,2)",
+          "(0,1)"
+        ],
+        [
+          "(1,0)",
+          "(0,0)"
+        ]
+      ],
+      "2": [
+        [
+          "(0,0)",
+          "(0,1)"
+        ]
+      ]
+    },
+    "director_views": {
+      "D1": {
+        "row_0": [
+          {
+            "color": "yellow",
+            "size": 2
+          },
+          {
+            "color": "yellow",
+            "size": 2
+          },
+          {
+            "color": "yellow",
+            "size": 1
+          }
+        ],
+        "row_1": [
+          {
+            "color": "green",
+            "size": 2
+          },
+          {
+            "color": "green",
+            "size": 2
+          },
+          {
+            "color": "red",
+            "size": 1
+          }
+        ],
+        "row_2": [
+          {
+            "color": "orange",
+            "size": 1
+          },
+          {
+            "color": "green",
+            "size": 1
+          },
+          {
+            "color": "blue",
+            "size": 1
+          }
+        ]
+      },
+      "D2": {
+        "row_0": [
+          {
+            "color": "yellow",
+            "size": 1
+          },
+          {
+            "color": "red",
+            "size": 1
+          },
+          {
+            "color": "red",
+            "size": 1
+          }
+        ],
+        "row_1": [
+          {
+            "color": "green",
+            "size": 1
+          },
+          {
+            "color": "green",
+            "size": 2
+          },
+          {
+            "color": "green",
+            "size": 2
+          }
+        ],
+        "row_2": [
+          {
+            "color": "orange",
+            "size": 2
+          },
+          {
+            "color": "orange",
+            "size": 2
+          },
+          {
+            "color": "red",
+            "size": 1
+          }
+        ]
+      },
+      "D3": {
+        "row_0": [
+          {
+            "color": "red",
+            "size": 2
+          },
+          {
+            "color": "red",
+            "size": 2
+          },
+          {
+            "color": "orange",
+            "size": 1
+          }
+        ],
+        "row_1": [
+          {
+            "color": "green",
+            "size": 1
+          },
+          {
+            "color": "green",
+            "size": 1
+          },
+          {
+            "color": "green",
+            "size": 1
+          }
+        ],
+        "row_2": [
+          {
+            "color": "red",
+            "size": 1
+          },
+          {
+            "color": "yellow",
+            "size": 1
+          },
+          {
+            "color": "orange",
+            "size": 1
+          }
+        ]
+      }
+    },
+    "metadata": {
+      "total_blocks": 21,
+      "filled_positions": 7,
+      "optional_heights": {
+        "(1,1)": 0,
+        "(2,1)": 0
+      }
+    }
+  },
+  {
+    "id": "craft-20-019",
+    "complexity": "simple",
+    "structure": {
+      "(0,0)": [
+        "os",
+        "rs",
+        "gs"
+      ],
+      "(0,1)": [
+        "rl",
+        "ol",
+        "bl"
+      ],
+      "(0,2)": [
+        "rl",
+        "ol",
+        "bl"
+      ],
+      "(1,0)": [
+        "ys",
+        "rs",
+        "bs"
+      ],
+      "(1,1)": [],
+      "(1,2)": [
+        "bl",
+        "rl",
+        "gl"
+      ],
+      "(2,0)": [
+        "ys",
+        "bs",
+        "rs"
+      ],
+      "(2,1)": [],
+      "(2,2)": [
+        "bl",
+        "rl",
+        "gl"
+      ]
+    },
+    "spans": {
+      "0": [
+        [
+          "(0,1)",
+          "(0,2)"
+        ],
+        [
+          "(2,2)",
+          "(1,2)"
+        ]
+      ],
+      "1": [
+        [
+          "(2,2)",
+          "(1,2)"
+        ],
+        [
+          "(0,2)",
+          "(0,1)"
+        ]
+      ],
+      "2": [
+        [
+          "(2,2)",
+          "(1,2)"
+        ],
+        [
+          "(0,1)",
+          "(0,2)"
+        ]
+      ]
+    },
+    "director_views": {
+      "D1": {
+        "row_0": [
+          {
+            "color": "orange",
+            "size": 1
+          },
+          {
+            "color": "yellow",
+            "size": 1
+          },
+          {
+            "color": "yellow",
+            "size": 1
+          }
+        ],
+        "row_1": [
+          {
+            "color": "red",
+            "size": 1
+          },
+          {
+            "color": "red",
+            "size": 1
+          },
+          {
+            "color": "blue",
+            "size": 1
+          }
+        ],
+        "row_2": [
+          {
+            "color": "green",
+            "size": 1
+          },
+          {
+            "color": "blue",
+            "size": 1
+          },
+          {
+            "color": "red",
+            "size": 1
+          }
+        ]
+      },
+      "D2": {
+        "row_0": [
+          {
+            "color": "orange",
+            "size": 1
+          },
+          {
+            "color": "red",
+            "size": 2
+          },
+          {
+            "color": "red",
+            "size": 2
+          }
+        ],
+        "row_1": [
+          {
+            "color": "red",
+            "size": 1
+          },
+          {
+            "color": "orange",
+            "size": 2
+          },
+          {
+            "color": "orange",
+            "size": 2
+          }
+        ],
+        "row_2": [
+          {
+            "color": "green",
+            "size": 1
+          },
+          {
+            "color": "blue",
+            "size": 2
+          },
+          {
+            "color": "blue",
+            "size": 2
+          }
+        ]
+      },
+      "D3": {
+        "row_0": [
+          {
+            "color": "red",
+            "size": 1
+          },
+          {
+            "color": "blue",
+            "size": 2
+          },
+          {
+            "color": "blue",
+            "size": 2
+          }
+        ],
+        "row_1": [
+          {
+            "color": "orange",
+            "size": 1
+          },
+          {
+            "color": "red",
+            "size": 2
+          },
+          {
+            "color": "red",
+            "size": 2
+          }
+        ],
+        "row_2": [
+          {
+            "color": "blue",
+            "size": 1
+          },
+          {
+            "color": "green",
+            "size": 2
+          },
+          {
+            "color": "green",
+            "size": 2
+          }
+        ]
+      }
+    },
+    "metadata": {
+      "total_blocks": 21,
+      "filled_positions": 7,
+      "optional_heights": {
+        "(1,1)": 0,
+        "(2,1)": 0
+      }
+    }
+  },
+  {
+    "id": "craft-20-020",
+    "complexity": "simple",
+    "structure": {
+      "(0,0)": [
+        "ys",
+        "yl",
+        "ys"
+      ],
+      "(0,1)": [
+        "ys",
+        "yl",
+        "gs"
+      ],
+      "(0,2)": [
+        "bs",
+        "ol",
+        "os"
+      ],
+      "(1,0)": [
+        "rs",
+        "ys",
+        "rs"
+      ],
+      "(1,1)": [],
+      "(1,2)": [
+        "rs",
+        "ol",
+        "gl"
+      ],
+      "(2,0)": [
+        "bs",
+        "os",
+        "gs"
+      ],
+      "(2,1)": [],
+      "(2,2)": [
+        "rs",
+        "gs",
+        "gl"
+      ]
+    },
+    "spans": {
+      "0": [],
+      "1": [
+        [
+          "(0,0)",
+          "(0,1)"
+        ],
+        [
+          "(0,2)",
+          "(1,2)"
+        ]
+      ],
+      "2": [
+        [
+          "(2,2)",
+          "(1,2)"
+        ]
+      ]
+    },
+    "director_views": {
+      "D1": {
+        "row_0": [
+          {
+            "color": "yellow",
+            "size": 1
+          },
+          {
+            "color": "red",
+            "size": 1
+          },
+          {
+            "color": "blue",
+            "size": 1
+          }
+        ],
+        "row_1": [
+          {
+            "color": "yellow",
+            "size": 1
+          },
+          {
+            "color": "yellow",
+            "size": 1
+          },
+          {
+            "color": "orange",
+            "size": 1
+          }
+        ],
+        "row_2": [
+          {
+            "color": "yellow",
+            "size": 1
+          },
+          {
+            "color": "red",
+            "size": 1
+          },
+          {
+            "color": "green",
+            "size": 1
+          }
+        ]
+      },
+      "D2": {
+        "row_0": [
+          {
+            "color": "yellow",
+            "size": 1
+          },
+          {
+            "color": "yellow",
+            "size": 1
+          },
+          {
+            "color": "blue",
+            "size": 1
+          }
+        ],
+        "row_1": [
+          {
+            "color": "yellow",
+            "size": 2
+          },
+          {
+            "color": "yellow",
+            "size": 2
+          },
+          {
+            "color": "orange",
+            "size": 1
+          }
+        ],
+        "row_2": [
+          {
+            "color": "yellow",
+            "size": 1
+          },
+          {
+            "color": "green",
+            "size": 1
+          },
+          {
+            "color": "orange",
+            "size": 1
+          }
+        ]
+      },
+      "D3": {
+        "row_0": [
+          {
+            "color": "blue",
+            "size": 1
+          },
+          {
+            "color": "red",
+            "size": 1
+          },
+          {
+            "color": "red",
+            "size": 1
+          }
+        ],
+        "row_1": [
+          {
+            "color": "orange",
+            "size": 2
+          },
+          {
+            "color": "orange",
+            "size": 2
+          },
+          {
+            "color": "green",
+            "size": 1
+          }
+        ],
+        "row_2": [
+          {
+            "color": "orange",
+            "size": 1
+          },
+          {
+            "color": "green",
+            "size": 2
+          },
+          {
+            "color": "green",
+            "size": 2
+          }
+        ]
+      }
+    },
+    "metadata": {
+      "total_blocks": 21,
+      "filled_positions": 7,
+      "optional_heights": {
+        "(1,1)": 0,
+        "(2,1)": 0
+      }
+    }
+  }
+]
