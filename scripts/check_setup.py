@@ -54,7 +54,7 @@ def main() -> int:
             problems.append(f"benchmark file is not valid JSON: {benchmark}")
 
     if config is not None:
-        providers = {"openai"}
+        providers = set()
         stages = config.get("stages") or {}
         for stage in ("phase1", "reconciliation", "builder"):
             providers.add((stages.get(stage) or {}).get("provider", "openai"))

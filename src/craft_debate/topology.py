@@ -1,4 +1,4 @@
-"""Oracle-free CRAFT debate: 3 Directors -> 3 reconciliations -> 1 Builder."""
+"""Generative CRAFT debate: 3 Directors -> 3 reconciliations -> 1 Builder."""
 
 from __future__ import annotations
 
@@ -9,11 +9,7 @@ import time
 from typing import Any, Dict, List, Optional
 
 from .domain import get_director_views, norm_pos
-from .environment import (
-    GameState,
-    get_all_physically_legal_actions,
-    validate_physical_action,
-)
+from .environment import GameState, validate_physical_action
 from .progress import calculate_progress
 from .prompts import (
     build_builder_prompt,
@@ -22,40 +18,38 @@ from .prompts import (
 )
 
 OBSERVATION_SYSTEM = (
-    "You are a CRAFT Director making an independent partial-observation proposal. "
-    "Respect the information boundary and exact tagged format."
+    "You are a CRAFT Director making an independent wall observation. Keep your "
+    "analysis private and communicate only a concise natural-language message."
 )
 RECONCILIATION_SYSTEM = (
-    "You are the same CRAFT Director reconciling three communicated proposals using "
-    "your own private evidence. Respect the information boundary and tagged format."
+    "You are the same CRAFT Director reconciling three public messages with your own "
+    "wall evidence. Keep analysis private and communicate one final public message."
 )
 BUILDER_SYSTEM = (
-    "You are the CRAFT Builder. Select exactly one ID from the supplied complete legal mask."
+    "You are the CRAFT Builder. Infer and generate one complete PLACE, REMOVE, or "
+    "CLARIFY response from the Directors' public messages and the current board."
 )
 
-DIRECTOR_PLACE_PATTERN = re.compile(
-    r"^PLACE\s+(?P<block>[GBRYO][SL])\s+AT\s+"
-    r"(?P<position>\([0-2]\s*,\s*[0-2]\))\s+LAYER\s+(?P<layer>[0-2])"
-    r"(?:\s+SPAN_TO\s+(?P<span_to>\([0-2]\s*,\s*[0-2]\)))?$",
-    re.IGNORECASE,
-)
-DIRECTOR_REMOVE_PATTERN = re.compile(
-    r"^REMOVE\s+AT\s+(?P<position>\([0-2]\s*,\s*[0-2]\))\s+"
-    r"LAYER\s+(?P<layer>[0-2])"
-    r"(?:\s+SPAN_TO\s+(?P<span_to>\([0-2]\s*,\s*[0-2]\)))?$",
-    re.IGNORECASE,
-)
-DIRECTOR_TEMPLATE_VALUES = {
-    "relevant private evidence, concise but spatially precise.",
-    "one concrete place or remove recommendation.",
-    "why that action follows from your evidence and public physics.",
-    "a number from 0 to 1.",
-    "what the messages consistently support.",
-    'conflicts or uncertainty; use "none" if absent.',
-    'how your phase-1 claim changes, or "unchanged".',
-    "which other director may know something useful and why.",
-    "concise reconciliation grounded in your private evidence.",
+DIRECTOR_TEMPLATE_MESSAGES = {
+    "your concise public instruction or cross-check.",
+    "your final public instruction or clarification.",
 }
+COORD = r"\(\s*[0-2]\s*,\s*[0-2]\s*\)"
+PLACE_MOVE_PATTERN = re.compile(
+    rf"^PLACE\s*:\s*(?P<block>[gbryo][sl])\s*:\s*"
+    rf"(?P<position>{COORD})\s*:\s*(?P<layer>[0-2])\s*:\s*"
+    rf"(?:(?P<span_to>{COORD})\s*:\s*)?CONFIRM\s*:\s*(?P<confirmation>.+)$",
+    re.IGNORECASE | re.DOTALL,
+)
+REMOVE_MOVE_PATTERN = re.compile(
+    rf"^REMOVE\s*:\s*(?P<position>{COORD})\s*:\s*"
+    rf"(?P<layer>[0-2])\s*:\s*(?:(?P<span_to>{COORD})\s*:\s*)?"
+    rf"CONFIRM\s*:\s*(?P<confirmation>.+)$",
+    re.IGNORECASE | re.DOTALL,
+)
+CLARIFY_MOVE_PATTERN = re.compile(
+    r"^CLARIFY\s*:\s*(?P<clarification>.+)$", re.IGNORECASE | re.DOTALL
+)
 
 
 def _extract_tag(text: str, tag: str) -> Optional[str]:
@@ -65,153 +59,240 @@ def _extract_tag(text: str, tag: str) -> Optional[str]:
     return None
 
 
-def _parse_director_action(text: str) -> tuple[Optional[Dict[str, Any]], Optional[str]]:
-    """Parse the protocol's target-free canonical Director action grammar."""
-    place = DIRECTOR_PLACE_PATTERN.fullmatch(text.strip())
-    if place:
-        block = place.group("block").lower()
-        span_to = norm_pos(place.group("span_to")) if place.group("span_to") else None
-        if block.endswith("l") and span_to is None:
-            return None, "Large-block PLACE requires SPAN_TO"
-        if block.endswith("s") and span_to is not None:
-            return None, "Small-block PLACE must not include SPAN_TO"
-        return {
-            "action": "place",
-            "block": block,
-            "position": norm_pos(place.group("position")),
-            "layer": int(place.group("layer")),
-            "span_to": span_to,
-        }, None
+def _extract_private_analysis(text: str) -> str:
+    for tag in ("analysis", "think"):
+        values = re.findall(
+            rf"<{tag}>\s*(.*?)\s*</{tag}>", text, re.DOTALL | re.IGNORECASE
+        )
+        if values:
+            return values[0].strip()
+        opening = re.search(rf"<{tag}>\s*(.*)$", text, re.DOTALL | re.IGNORECASE)
+        if opening:
+            return opening.group(1).strip().removesuffix("```").strip()
+    return ""
 
-    remove = DIRECTOR_REMOVE_PATTERN.fullmatch(text.strip())
-    if remove:
-        return {
-            "action": "remove",
-            "block": None,
-            "position": norm_pos(remove.group("position")),
-            "layer": int(remove.group("layer")),
-            "span_to": norm_pos(remove.group("span_to")) if remove.group("span_to") else None,
-        }, None
 
-    return None, (
-        "Action must match canonical PLACE/REMOVE grammar with block code, position, "
-        "layer, and span_to when needed"
+def parse_director_response(text: str) -> Dict[str, Any]:
+    """Extract one public message while keeping all Director reasoning private."""
+    errors: List[str] = []
+    warnings: List[str] = []
+    opening_matches = list(re.finditer(r"<message>", text, re.IGNORECASE))
+    closed_values = re.findall(
+        r"<message>\s*(.*?)\s*</message>", text, re.DOTALL | re.IGNORECASE
     )
 
+    public_message = ""
+    if len(opening_matches) != 1:
+        errors.append(
+            f"Expected exactly one <message> element, found {len(opening_matches)}"
+        )
+    elif len(closed_values) == 1:
+        public_message = closed_values[0].strip()
+    elif not closed_values:
+        public_message = text[opening_matches[0].end() :].strip()
+        public_message = public_message.removesuffix("```").strip()
+        warnings.append("Recovered an unclosed <message> element")
+    else:
+        errors.append(
+            f"Expected exactly one closed <message> element, found {len(closed_values)}"
+        )
 
-def parse_director_response(
-    text: str, *, fields: List[str], action_field: str
-) -> Dict[str, Any]:
-    """Parse and validate one Director message without making another LLM call."""
-    parsed: Dict[str, Any] = {}
-    errors: List[str] = []
-    residual = text
+    normalized_template = public_message.strip().strip("[]").strip().lower().rstrip(".")
+    template_values = {value.rstrip(".") for value in DIRECTOR_TEMPLATE_MESSAGES}
+    if not public_message:
+        errors.append("<message> is empty")
+    elif normalized_template in template_values:
+        errors.append("<message> copied the response template instead of a message")
+    elif re.search(r"</?[A-Za-z][^>]*>", public_message):
+        errors.append("<message> contains a nested tag and was quarantined")
 
-    for field in fields:
-        pattern = rf"<{field}>\s*(.*?)\s*</{field}>"
-        values = re.findall(pattern, text, re.DOTALL | re.IGNORECASE)
-        if len(values) != 1:
-            errors.append(f"Expected exactly one <{field}> element, found {len(values)}")
-        value = values[0].strip() if values else ""
-        parsed[field] = value
-        if not value:
-            errors.append(f"<{field}> is empty")
-        elif value.lower() in DIRECTOR_TEMPLATE_VALUES:
-            errors.append(f"<{field}> copied a protocol description instead of a value")
-        residual = re.sub(pattern, "", residual, flags=re.DOTALL | re.IGNORECASE)
-
-    if residual.strip():
-        errors.append("Response contains text outside the required elements")
-
-    normalized_action, action_error = _parse_director_action(parsed.get(action_field, ""))
-    if action_error:
-        errors.append(f"<{action_field}>: {action_error}")
-
-    confidence_value: Optional[float] = None
-    try:
-        confidence_value = float(parsed.get("confidence", ""))
-        if not 0.0 <= confidence_value <= 1.0:
-            raise ValueError
-    except (TypeError, ValueError):
-        errors.append("<confidence> must be a number from 0 to 1")
-        confidence_value = None
-
+    exact_pattern = (
+        r"\s*<(?P<tag>analysis|think)>.*?</(?P=tag)>\s*"
+        r"<message>.*?</message>\s*"
+    )
+    valid = not errors
+    parse_mode = (
+        "exact"
+        if valid and re.fullmatch(exact_pattern, text, re.DOTALL | re.IGNORECASE)
+        else "recovered"
+        if valid
+        else "invalid"
+    )
     return {
-        **parsed,
-        "normalized_action": normalized_action,
-        "confidence_value": confidence_value,
-        "protocol_valid": not errors,
+        "private_analysis": _extract_private_analysis(text),
+        "public_message": public_message if valid else "",
+        "protocol_valid": valid,
         "protocol_errors": errors,
+        "protocol_warnings": warnings,
+        "parse_mode": parse_mode,
     }
 
 
-def _communication_payload(item: Dict[str, Any], fields: List[str]) -> Dict[str, Any]:
-    """Pass only validated structured content across a protocol edge."""
+def _communication_payload(item: Dict[str, Any]) -> Dict[str, Any]:
+    """Return the complete and intentionally tiny cross-agent payload."""
     if not item["protocol_valid"]:
         return {
             "protocol_valid": False,
             "protocol_errors": list(item["protocol_errors"]),
         }
+    return {"protocol_valid": True, "message": item["public_message"]}
+
+
+def _parse_builder_move_line(line: str) -> Dict[str, Any]:
+    """Parse one complete generative Builder line without correcting its meaning."""
+    cleaned = line.strip()
+    cleaned = re.sub(r"^```(?:[A-Za-z0-9_-]+)?\s*", "", cleaned)
+    cleaned = re.sub(r"\s*```$", "", cleaned)
+    cleaned = cleaned.strip().strip("[]").strip()
+    place = PLACE_MOVE_PATTERN.fullmatch(cleaned)
+    if place:
+        return {
+            "action": "place",
+            "move": {
+                "action": "place",
+                "block": place.group("block").lower(),
+                "position": norm_pos(place.group("position")),
+                "layer": int(place.group("layer")),
+                "span_to": norm_pos(place.group("span_to"))
+                if place.group("span_to")
+                else None,
+            },
+            "clarification": None,
+            "confirmation": place.group("confirmation").strip(),
+            "parse_error": None,
+        }
+
+    remove = REMOVE_MOVE_PATTERN.fullmatch(cleaned)
+    if remove:
+        return {
+            "action": "remove",
+            "move": {
+                "action": "remove",
+                "block": None,
+                "position": norm_pos(remove.group("position")),
+                "layer": int(remove.group("layer")),
+                "span_to": norm_pos(remove.group("span_to"))
+                if remove.group("span_to")
+                else None,
+            },
+            "clarification": None,
+            "confirmation": remove.group("confirmation").strip(),
+            "parse_error": None,
+        }
+
+    clarify = CLARIFY_MOVE_PATTERN.fullmatch(cleaned)
+    if clarify and clarify.group("clarification").strip():
+        return {
+            "action": "clarify",
+            "move": None,
+            "clarification": clarify.group("clarification").strip(),
+            "confirmation": "",
+            "parse_error": None,
+        }
+
     return {
-        "protocol_valid": True,
-        **{field: item[field] for field in fields},
-        "normalized_action": copy.deepcopy(item["normalized_action"]),
-        "confidence_value": item["confidence_value"],
+        "action": "unparsed",
+        "move": None,
+        "clarification": None,
+        "confirmation": "",
+        "parse_error": "Move does not match PLACE/REMOVE/CLARIFY response grammar",
     }
 
 
 def parse_builder_response(text: str) -> Dict[str, Any]:
-    tag_pattern = r"<action_id>\s*(A\d{4,})\s*</action_id>"
-    tagged_candidates = re.findall(tag_pattern, text.upper(), re.IGNORECASE)
-    unique_tagged = list(dict.fromkeys(tagged_candidates))
-    if len(unique_tagged) > 1:
-        return {
-            "action_id": None,
-            "parse_error": (
-                "Ambiguous Builder response contains multiple tagged action IDs: "
-                + ", ".join(unique_tagged)
-            ),
-            "parse_mode": "invalid",
-            "raw_response": text,
-        }
-
-    candidates = re.findall(r"\bA\d{4,}\b", text.upper())
-    unique_candidates = list(dict.fromkeys(candidates))
-    if unique_tagged:
-        candidate = unique_tagged[0]
-    elif len(unique_candidates) == 1:
-        candidate = unique_candidates[0]
-    else:
-        candidate = None
-
-    if not unique_candidates:
-        return {
-            "action_id": None,
-            "parse_error": "No A#### action ID found in Builder response",
-            "parse_mode": "invalid",
-            "raw_response": text,
-        }
-    if candidate is None:
-        return {
-            "action_id": None,
-            "parse_error": (
-                "Ambiguous Builder response contains multiple action IDs: "
-                + ", ".join(unique_candidates)
-            ),
-            "parse_mode": "invalid",
-            "raw_response": text,
-        }
-
-    exact_pattern = rf"\s*<action_id>\s*{candidate}\s*</action_id>\s*"
-    parse_mode = (
-        "exact"
-        if re.fullmatch(exact_pattern, text, re.DOTALL | re.IGNORECASE)
-        else "recovered"
+    """Parse one explicit Builder move, recovering harmless wrapper deviations."""
+    openings = list(re.finditer(r"<move>", text, re.IGNORECASE))
+    closed_values = re.findall(
+        r"<move>\s*(.*?)\s*</move>", text, re.DOTALL | re.IGNORECASE
     )
+    payload: Optional[str] = None
+    exact = False
+
+    if len(openings) > 1 or len(closed_values) > 1:
+        error = "Ambiguous Builder response contains multiple <move> elements"
+    elif len(openings) == 1 and len(closed_values) == 1:
+        payload = closed_values[0].strip()
+        exact_pattern = (
+            r"\s*<(?P<tag>analysis|think)>.*?</(?P=tag)>\s*"
+            r"<move>.*?</move>\s*"
+        )
+        exact = bool(re.fullmatch(exact_pattern, text, re.DOTALL | re.IGNORECASE))
+        error = None
+    elif len(openings) == 1:
+        payload = text[openings[0].end() :].strip().removesuffix("```").strip()
+        error = None
+    else:
+        unclosed_private = any(
+            len(re.findall(rf"<{tag}>", text, re.IGNORECASE))
+            > len(re.findall(rf"</{tag}>", text, re.IGNORECASE))
+            for tag in ("analysis", "think")
+        )
+        if unclosed_private:
+            error = "No public move follows the unclosed private analysis"
+        else:
+            without_private = re.sub(
+                r"<(analysis|think)>.*?</\1>",
+                "",
+                text,
+                flags=re.DOTALL | re.IGNORECASE,
+            )
+            action_lines = [
+                line.strip().strip("[]").strip()
+                for line in without_private.splitlines()
+                if re.match(
+                    r"^\s*\[?\s*(PLACE|REMOVE|CLARIFY)\s*:",
+                    line,
+                    re.IGNORECASE,
+                )
+            ]
+            if len(action_lines) == 1:
+                payload = action_lines[0]
+                error = None
+            elif len(action_lines) > 1:
+                error = "Ambiguous Builder response contains multiple action lines"
+            else:
+                error = "No <move> element or unique PLACE/REMOVE/CLARIFY line found"
+
+    if error is None and payload is not None:
+        if re.search(r"</?[A-Za-z][^>]*>", payload):
+            error = "Builder move contains a nested tag and was quarantined"
+            parsed = {
+                "action": "unparsed",
+                "move": None,
+                "clarification": None,
+                "confirmation": "",
+            }
+        else:
+            action_markers = re.findall(
+                r"\b(?:PLACE|REMOVE|CLARIFY)\s*:", payload, re.IGNORECASE
+            )
+        if error is None and len(action_markers) != 1:
+            error = "Builder move must contain exactly one action line"
+            parsed = {
+                "action": "unparsed",
+                "move": None,
+                "clarification": None,
+                "confirmation": "",
+            }
+        elif error is None:
+            parsed = _parse_builder_move_line(payload)
+            error = parsed.get("parse_error")
+    else:
+        parsed = {
+            "action": "unparsed",
+            "move": None,
+            "clarification": None,
+            "confirmation": "",
+        }
+
+    valid = error is None
     return {
-        "action_id": candidate,
-        "parse_error": None,
-        "parse_mode": parse_mode,
+        **parsed,
+        "private_analysis": _extract_private_analysis(text),
+        "parse_error": error,
+        "parse_mode": "exact" if valid and exact else "recovered" if valid else "invalid",
+        "protocol_valid": valid,
+        "protocol_errors": [error] if error else [],
         "raw_response": text,
     }
 
@@ -348,6 +429,7 @@ class Debate:
 
         self.public_history: List[str] = []
         self.previous_builder_result: Optional[str] = None
+        self.consecutive_no_execution = 0
         self.rounds: List[Dict[str, Any]] = []
         self.baseline = calculate_progress(
             self.env.current_structure, self.env.target_structure
@@ -371,11 +453,11 @@ class Debate:
         )
         phase1_latency = round(time.monotonic() - phase_started, 3)
         record["phase1"] = observations
-        phase1_fields = ["observation", "proposed_action", "reasoning", "confidence"]
         phase1_messages = {
-            item["director_id"]: _communication_payload(item, phase1_fields)
+            item["director_id"]: _communication_payload(item)
             for item in observations
         }
+        record["phase1_public_messages"] = copy.deepcopy(phase1_messages)
 
         phase_started = time.monotonic()
         reconciliations = await asyncio.gather(
@@ -388,53 +470,35 @@ class Debate:
         )
         reconciliation_latency = round(time.monotonic() - phase_started, 3)
         record["reconciliation"] = reconciliations
-        reconciliation_fields = [
-            "agreement",
-            "contradictions",
-            "revision",
-            "complementary_evidence",
-            "recommended_action",
-            "reasoning",
-            "confidence",
-        ]
         reconciliation_messages = {
-            item["director_id"]: _communication_payload(item, reconciliation_fields)
+            item["director_id"]: _communication_payload(item)
             for item in reconciliations
         }
-
-        legal_actions = get_all_physically_legal_actions(
-            public_state, self.env.available_blocks
+        record["reconciliation_public_messages"] = copy.deepcopy(
+            reconciliation_messages
         )
-        record["legal_action_mask"] = copy.deepcopy(legal_actions)
+
         builder_prompt = build_builder_prompt(
             builder_id=self.builder["id"],
             public_state=public_state,
             reconciliations=reconciliation_messages,
-            legal_actions=legal_actions,
+            available_blocks=self.env.available_blocks,
+            previous_builder_result=self.previous_builder_result,
         )
         phase_started = time.monotonic()
         builder_response = await self.clients["builder"].complete(
             BUILDER_SYSTEM,
             builder_prompt,
-            {"kind": "builder", "legal_actions": legal_actions},
+            {"kind": "builder", "public_state": copy.deepcopy(public_state)},
         )
         builder_phase_latency = round(time.monotonic() - phase_started, 3)
         builder = parse_builder_response(builder_response["content"])
-        selected = next(
-            (action for action in legal_actions if action["id"] == builder["action_id"]),
-            None,
-        )
-        builder_protocol_error = builder.get("parse_error")
-        if builder_protocol_error is None and selected is None:
-            builder_protocol_error = "Selected action ID is not in the current legal mask"
         builder.update(
             {
-                "selected_action": copy.deepcopy(selected),
                 "prompt": builder_prompt,
                 "usage": builder_response.get("usage", {}),
                 "latency_seconds": builder_response.get("latency_seconds"),
-                "protocol_valid": builder_protocol_error is None,
-                "protocol_errors": [builder_protocol_error] if builder_protocol_error else [],
+                "provider_reasoning": builder_response.get("reasoning_content", ""),
             }
         )
         record["builder"] = builder
@@ -446,6 +510,8 @@ class Debate:
             ),
             "reconciliation_total": len(reconciliations),
             "builder_valid": builder["protocol_valid"],
+            "builder_parse_mode": builder["parse_mode"],
+            "builder_action": builder["action"],
         }
         record["phase_latency_seconds"] = {
             "phase1": phase1_latency,
@@ -454,7 +520,7 @@ class Debate:
         }
 
         physical_validation, execution, evaluation = self._validate_execute_evaluate(
-            public_state, selected, builder
+            public_state, builder
         )
         record["physical_validation"] = physical_validation
         record["execution"] = execution
@@ -462,18 +528,32 @@ class Debate:
         # Kept as an output alias for existing plot/summary readers.
         record["score"] = evaluation["score"]
 
+        if execution["ok"]:
+            self.consecutive_no_execution = 0
+        else:
+            self.consecutive_no_execution += 1
+        record["stability"] = {
+            "consecutive_rounds_without_execution": self.consecutive_no_execution
+        }
+
+        self._append_public_messages(round_number, reconciliations)
         self._append_public_result(builder, physical_validation, execution)
         self._trim_history()
+        record["public_history_after"] = list(self.public_history)
         if self.verbose:
             protocol = record["protocol_status"]
+            action_label = builder["action"].upper() if builder["protocol_valid"] else "-"
+            physics = physical_validation["ok"]
+            physics_label = "n/a" if physics is None else str(bool(physics))
             print(
                 f"  [Debate] round {round_number:>2}/{self.max_rounds} | "
-                f"action_id={builder.get('action_id') or '-':<6} executed={execution['ok']} "
+                f"action={action_label:<7} parse={builder['parse_mode']:<9} "
+                f"physics={physics_label:<5} executed={execution['ok']} "
                 f"| overall_progress={evaluation['score']['overall_progress']:.4f} "
                 f"(delta {evaluation['score']['delta']:+.4f}) | "
                 f"protocol=p1:{protocol['phase1_valid']}/{protocol['phase1_total']} "
                 f"rec:{protocol['reconciliation_valid']}/{protocol['reconciliation_total']} "
-                f"builder:{builder['parse_mode']}"
+                f"no_exec_streak:{self.consecutive_no_execution}"
             )
         return record
 
@@ -487,15 +567,11 @@ class Debate:
             private_view=self.private_views[director_id],
             public_state=public_state,
             public_history=history,
-            previous_builder_result=self.previous_builder_result,
         )
         response = await self.clients["phase1"].complete(
             OBSERVATION_SYSTEM, prompt, {"kind": "observation", "director_id": director_id}
         )
-        fields = ["observation", "proposed_action", "reasoning", "confidence"]
-        parsed = parse_director_response(
-            response["content"], fields=fields, action_field="proposed_action"
-        )
+        parsed = parse_director_response(response["content"])
         return {
             "agent_id": role.get("id", director_id),
             "director_id": director_id,
@@ -505,6 +581,7 @@ class Debate:
             "raw_response": response["content"],
             "usage": response.get("usage", {}),
             "latency_seconds": response.get("latency_seconds"),
+            "provider_reasoning": response.get("reasoning_content", ""),
         }
 
     async def _run_reconciliation(
@@ -522,25 +599,13 @@ class Debate:
             public_state=public_state,
             phase1_messages=phase1_messages,
             public_history=history,
-            previous_builder_result=self.previous_builder_result,
         )
         response = await self.clients["reconciliation"].complete(
             RECONCILIATION_SYSTEM,
             prompt,
             {"kind": "reconciliation", "director_id": director_id},
         )
-        fields = [
-            "agreement",
-            "contradictions",
-            "revision",
-            "complementary_evidence",
-            "recommended_action",
-            "reasoning",
-            "confidence",
-        ]
-        parsed = parse_director_response(
-            response["content"], fields=fields, action_field="recommended_action"
-        )
+        parsed = parse_director_response(response["content"])
         return {
             "agent_id": role.get("id", director_id),
             "director_id": director_id,
@@ -550,16 +615,18 @@ class Debate:
             "raw_response": response["content"],
             "usage": response.get("usage", {}),
             "latency_seconds": response.get("latency_seconds"),
+            "provider_reasoning": response.get("reasoning_content", ""),
         }
 
     def _validate_execute_evaluate(
         self,
         public_state: Dict[str, Any],
-        selected: Optional[Dict[str, Any]],
         builder: Dict[str, Any],
     ) -> tuple[Dict[str, Any], Dict[str, Any], Dict[str, Any]]:
-        if selected is None:
-            reason = builder.get("parse_error") or "Selected action ID is not in legal mask"
+        move = builder.get("move")
+        target_metrics: Dict[str, Any] = {}
+        if not builder["protocol_valid"]:
+            reason = builder.get("parse_error") or "Builder response could not be parsed"
             validation = {
                 "ok": False,
                 "reason": reason,
@@ -567,26 +634,41 @@ class Debate:
             }
             execution = {
                 "ok": False,
+                "status": "parse_rejected",
                 "error": reason,
                 "move": None,
                 "public_state_after": self.env.snapshot(),
             }
-            target_metrics: Dict[str, Any] = {}
+        elif builder["action"] == "clarify":
+            reason = builder.get("clarification") or "Builder requested clarification"
+            validation = {
+                "ok": None,
+                "reason": reason,
+                "validator": "not_applicable",
+            }
+            execution = {
+                "ok": False,
+                "status": "clarify",
+                "error": None,
+                "move": None,
+                "clarification": reason,
+                "public_state_after": self.env.snapshot(),
+            }
         else:
             ok, reason, normalized = validate_physical_action(
-                public_state, selected, self.env.available_blocks
+                public_state, move, self.env.available_blocks
             )
             validation = {
                 "ok": ok,
                 "reason": reason,
                 "validator": "deterministic_public_physics",
-                "action_id": selected["id"],
                 "normalized_action": normalized,
             }
             if ok:
                 result = self.env.execute_move(normalized)
                 execution = {
                     "ok": result["ok"],
+                    "status": "executed" if result["ok"] else "execution_failed",
                     "error": result["error"],
                     "move": result["move"],
                     "public_state_after": self.env.snapshot(),
@@ -599,11 +681,11 @@ class Debate:
             else:
                 execution = {
                     "ok": False,
+                    "status": "physics_rejected",
                     "error": reason,
                     "move": normalized,
                     "public_state_after": self.env.snapshot(),
                 }
-                target_metrics = {}
 
         score = calculate_progress(self.env.current_structure, self.env.target_structure)
         previous = (
@@ -614,6 +696,16 @@ class Debate:
         score["delta"] = round(score["overall_progress"] - previous, 6)
         return validation, execution, {"score": score, **target_metrics}
 
+    def _append_public_messages(
+        self, round_number: int, reconciliations: List[Dict[str, Any]]
+    ) -> None:
+        """Keep final public utterances as cross-round conversation memory."""
+        for item in reconciliations:
+            if item["protocol_valid"]:
+                self.public_history.append(
+                    f"Round {round_number} {item['director_id']}: {item['public_message']}"
+                )
+
     def _append_public_result(
         self,
         builder: Dict[str, Any],
@@ -621,9 +713,13 @@ class Debate:
         execution: Dict[str, Any],
     ) -> None:
         if execution["ok"] and execution.get("move"):
-            result = f"Builder executed {builder['action_id']}: {_format_move(execution['move'])}."
+            result = f"Builder executed: {_format_move(execution['move'])}."
+        elif execution.get("status") == "clarify":
+            result = f"Builder asked: {builder['clarification']}"
+        elif execution.get("status") == "parse_rejected":
+            result = f"Builder response was not executed: {builder['parse_error']}."
         else:
-            result = f"Builder action failed validation/execution: {validation['reason']}."
+            result = f"Builder action was not executed: {validation['reason']}."
         self.previous_builder_result = result
         self.public_history.append(result)
 

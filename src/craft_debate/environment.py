@@ -111,6 +111,8 @@ def validate_physical_action(
                     f"{position} or {span_to} already occupied by another span at layer {layer}"
                 ), move
             move["span_to"] = span_to
+        elif span_to is not None:
+            return False, f"Small block '{block}' must not include span_to", move
     else:
         stack = structure[position]
         if not stack:
@@ -139,6 +141,8 @@ def validate_physical_action(
                     f"got {span_to}, expected {partner}"
                 ), move
             move["span_to"] = span_to
+        elif span_to is not None:
+            return False, "Small-block removal must not include span_to", move
 
     return True, "ok", move
 

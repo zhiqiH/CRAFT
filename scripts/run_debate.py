@@ -74,6 +74,10 @@ def make_client(stage_cfg: dict, mock: bool, api_cfg: dict) -> Any:
         key_name=stage_cfg.get("api_key", provider["secret_file"]),
         env_var=provider["env_var"],
     )
+    if not api_key and stage_cfg["provider"] == "ollama":
+        # The OpenAI-compatible client requires a non-empty value even though the
+        # local Ollama endpoint does not authenticate it.
+        api_key = "ollama-local"
     if not api_key:
         raise RuntimeError(
             f"no API key for {stage_cfg['provider']} — set {provider['env_var']} "
@@ -116,7 +120,9 @@ def debate_model_label(stage_configs: dict) -> str:
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Run oracle-free 3+3+1 Debate on CRAFT")
+    parser = argparse.ArgumentParser(
+        description="Run fixed 3+3+1 Debate with an open-action Builder on CRAFT"
+    )
     parser.add_argument(
         "--config",
         default=str(PROJECT_ROOT / "config" / "debate_config.json"),
@@ -221,7 +227,14 @@ def main() -> int:
             "created_at": timestamp.isoformat(timespec="seconds"),
             "model": display_model,
             "mock": bool(args.mock),
-            "topology": "Oracle-free Debate (3 Directors -> 3 reconciliations -> 1 Builder)",
+            "topology": (
+                "3 Directors -> same 3 Directors reconcile -> "
+                "1 open-action Builder (7 calls)"
+            ),
+            "protocol_version": "generative-builder-v3",
+            "builder_policy": "open_action_generation",
+            "agent_identities": 4,
+            "calls_per_round": 7,
             "paper": "CRAFT: arXiv:2603.25268v2",
             "config": config,
         },
@@ -254,7 +267,10 @@ def main() -> int:
             "Protocol validity: "
             f"phase1={quality['phase1_valid_rate']:.1%}, "
             f"reconciliation={quality['reconciliation_valid_rate']:.1%}, "
-            f"builder={quality['builder_valid_rate']:.1%}"
+            f"builder={quality['builder_valid_rate']:.1%}; "
+            f"physical={quality['physical_valid_rate']:.1%}, "
+            f"executed={quality['execution_rate']:.1%}, "
+            f"clarify={quality['builder_clarify']}"
         )
     return 0
 

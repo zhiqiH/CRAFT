@@ -9,6 +9,8 @@ import time
 from pathlib import Path
 from typing import Any, Dict, Optional
 
+from .domain import ALL_COORDS
+
 
 def load_api_key(
     project_root: Path,
@@ -146,25 +148,51 @@ class MockLLM:
             )
         elif kind == "observation":
             content = (
-                "<observation>My wall has a missing bottom support.</observation>\n"
-                "<proposed_action>PLACE gs AT (0,0) LAYER 0</proposed_action>\n"
-                "<reasoning>The public board shows the position is empty.</reasoning>\n"
-                "<confidence>0.5</confidence>"
+                "<analysis>My wall shows a missing small green bottom support.</analysis>\n"
+                "<message>Please place a small green block at the left of my bottom layer.</message>"
             )
         elif kind == "reconciliation":
             content = (
-                "<agreement>The Directors recommend a bottom-layer placement.</agreement>\n"
-                "<contradictions>Block identity is uncertain.</contradictions>\n"
-                "<revision>unchanged</revision>\n"
-                "<complementary_evidence>The other walls may resolve the position.</complementary_evidence>\n"
-                "<recommended_action>PLACE gs AT (0,0) LAYER 0</recommended_action>\n"
-                "<reasoning>This is consistent with the public empty board.</reasoning>\n"
-                "<confidence>0.4</confidence>"
+                "<analysis>The public messages support one small green bottom placement.</analysis>\n"
+                "<message>Please place a small green block at the left of my bottom layer.</message>"
             )
         elif kind == "builder":
-            legal_actions = meta.get("legal_actions") or []
-            action_id = legal_actions[0]["id"] if legal_actions else "A0000"
-            content = f"<action_id>{action_id}</action_id>"
+            public_state = meta.get("public_state") or {}
+            structure = public_state.get("structure", public_state)
+            position = next(
+                (coord for coord in ALL_COORDS if len(structure.get(coord, [])) < 3),
+                None,
+            )
+            if position is not None:
+                layer = len(structure.get(position, []))
+                move = (
+                    f"PLACE:gs:{position}:{layer}:CONFIRM:"
+                    "Following the public Director instruction with a supported small block."
+                )
+            else:
+                position = next(coord for coord in ALL_COORDS if structure.get(coord))
+                stack = structure[position]
+                layer = len(stack) - 1
+                if stack[-1].endswith("l"):
+                    pairs = (public_state.get("spans") or {}).get(str(layer), [])
+                    partner = next(
+                        (b if a == position else a for a, b in pairs if position in (a, b)),
+                        None,
+                    )
+                    move = (
+                        f"REMOVE:{position}:{layer}:{partner}:CONFIRM:"
+                        "Removing the top large block as directed."
+                    )
+                else:
+                    move = (
+                        f"REMOVE:{position}:{layer}:CONFIRM:"
+                        "Removing the top small block as directed."
+                    )
+            content = (
+                "<analysis>I mapped the public instruction to the current board and "
+                "checked the stack height.</analysis>\n"
+                f"<move>{move}</move>"
+            )
         elif kind == "judge":
             # Legacy paper-protocol mock. It intentionally remains scoped to that
             # separate oracle-reproduction runner, never the Debate pipeline.
