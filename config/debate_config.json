@@ -33,13 +33,13 @@
   },
   "stages": {
     "phase1": {
-      "model": "qwen2.5:7b-instruct-q5_K_M",
+      "model": "mistral:7b-instruct-v0.3-q8_0",
       "provider": "ollama",
       "temperature": 0.0,
       "max_tokens": 512
     },
     "reconciliation": {
-      "model": "qwen2.5:7b-instruct-q5_K_M",
+      "model": "mistral:7b-instruct-v0.3-q8_0",
       "provider": "ollama",
       "temperature": 0.0,
       "max_tokens": 512
