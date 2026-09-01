@@ -161,25 +161,59 @@ def _communication_payload(item: Dict[str, Any], fields: List[str]) -> Dict[str,
 
 
 def parse_builder_response(text: str) -> Dict[str, Any]:
-    pattern = r"<action_id>\s*(.*?)\s*</action_id>"
-    values = re.findall(pattern, text, re.DOTALL | re.IGNORECASE)
-    residual = re.sub(pattern, "", text, flags=re.DOTALL | re.IGNORECASE)
-    candidate = (values[0] if len(values) == 1 else "").strip().upper()
-    if len(values) != 1 or residual.strip():
+    tag_pattern = r"<action_id>\s*(A\d{4,})\s*</action_id>"
+    tagged_candidates = re.findall(tag_pattern, text.upper(), re.IGNORECASE)
+    unique_tagged = list(dict.fromkeys(tagged_candidates))
+    if len(unique_tagged) > 1:
         return {
             "action_id": None,
             "parse_error": (
-                "Builder response must contain exactly one <action_id> element and no other text"
+                "Ambiguous Builder response contains multiple tagged action IDs: "
+                + ", ".join(unique_tagged)
             ),
+            "parse_mode": "invalid",
             "raw_response": text,
         }
-    if not re.fullmatch(r"A\d{4,}", candidate):
+
+    candidates = re.findall(r"\bA\d{4,}\b", text.upper())
+    unique_candidates = list(dict.fromkeys(candidates))
+    if unique_tagged:
+        candidate = unique_tagged[0]
+    elif len(unique_candidates) == 1:
+        candidate = unique_candidates[0]
+    else:
+        candidate = None
+
+    if not unique_candidates:
         return {
             "action_id": None,
-            "parse_error": "No valid <action_id>A####</action_id> found",
+            "parse_error": "No A#### action ID found in Builder response",
+            "parse_mode": "invalid",
             "raw_response": text,
         }
-    return {"action_id": candidate, "parse_error": None, "raw_response": text}
+    if candidate is None:
+        return {
+            "action_id": None,
+            "parse_error": (
+                "Ambiguous Builder response contains multiple action IDs: "
+                + ", ".join(unique_candidates)
+            ),
+            "parse_mode": "invalid",
+            "raw_response": text,
+        }
+
+    exact_pattern = rf"\s*<action_id>\s*{candidate}\s*</action_id>\s*"
+    parse_mode = (
+        "exact"
+        if re.fullmatch(exact_pattern, text, re.DOTALL | re.IGNORECASE)
+        else "recovered"
+    )
+    return {
+        "action_id": candidate,
+        "parse_error": None,
+        "parse_mode": parse_mode,
+        "raw_response": text,
+    }
 
 
 def parse_judge_response(text: str) -> Dict[str, Any]:
@@ -431,11 +465,15 @@ class Debate:
         self._append_public_result(builder, physical_validation, execution)
         self._trim_history()
         if self.verbose:
+            protocol = record["protocol_status"]
             print(
                 f"  [Debate] round {round_number:>2}/{self.max_rounds} | "
                 f"action_id={builder.get('action_id') or '-':<6} executed={execution['ok']} "
                 f"| overall_progress={evaluation['score']['overall_progress']:.4f} "
-                f"(delta {evaluation['score']['delta']:+.4f})"
+                f"(delta {evaluation['score']['delta']:+.4f}) | "
+                f"protocol=p1:{protocol['phase1_valid']}/{protocol['phase1_total']} "
+                f"rec:{protocol['reconciliation_valid']}/{protocol['reconciliation_total']} "
+                f"builder:{builder['parse_mode']}"
             )
         return record
 

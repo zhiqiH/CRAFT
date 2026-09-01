@@ -202,9 +202,7 @@ Interpret Director-relative descriptions using:
 Every action in LEGAL ACTION MASK is physically legal but may be wrong for the hidden
 target. Select the action best supported by the reconciliations. Do not invent or
 rewrite an action. A reconciliation with `protocol_valid=false` has been quarantined;
-do not infer its missing semantic content. Return exactly one XML element named
-`action_id`, containing one ID copied from the current mask, with no other text. No
-sample action ID is provided because the ID must come from the current mask.
+do not infer its missing semantic content.
 
 CURRENT PUBLIC BOARD:
 {_json_dumps(public_state)}
@@ -213,4 +211,9 @@ PHASE-2 RECONCILIATIONS:
 {_json_dumps(reconciliations)}
 
 COMPLETE LEGAL ACTION MASK:
-{_json_dumps(legal_actions)}"""
+{_json_dumps(legal_actions)}
+
+FINAL RESPONSE CONTRACT:
+Return exactly one XML element named `action_id`, containing one ID copied from the
+current mask, with no other text. No sample action ID is provided because the ID must
+come from the current mask."""

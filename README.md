@@ -32,7 +32,8 @@ Builder 从完整 legal-action mask 中选择一个 action ID
 - Reconciliation：同一批 Director 只接收三份经过本地校验的 Phase-1 消息；无效消息
   只传递 `protocol_valid=false` 和错误原因，不传递未经验证的语义内容。
 - Builder：只接收公开棋盘、三份经过校验的 reconciliation 和完整 legal-action mask，
-  且仅返回一个来自当前 mask 的 action ID。
+  且仅返回一个来自当前 mask 的 action ID。若回复附带解释但仍能唯一确定一个 ID，本地
+  解析记为 `recovered`；无 ID、多个不同 ID 或 ID 不在当前 mask 中仍会拒绝。
 - 本地校验严格检查标签数量、标签外文本、模板回显、action 语法和 confidence 范围。
   校验失败会被记录和隔离，不重试、不调用 oracle，也不改变 `3 + 3 + 1` 拓扑。
 

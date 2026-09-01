@@ -53,6 +53,20 @@ class TemplateEchoMock(RecordingMock):
         }
 
 
+class FixedBuilderMock(RecordingMock):
+    def __init__(self, content):
+        super().__init__()
+        self.content = content
+
+    async def complete(self, system, user, meta=None):
+        self.calls.append({"system": system, "user": user, "meta": copy.deepcopy(meta or {})})
+        return {
+            "content": self.content,
+            "usage": {},
+            "latency_seconds": 0.0,
+        }
+
+
 class LegalActionMaskTests(unittest.TestCase):
     def setUp(self):
         self.empty = {"structure": {coord: [] for coord in ALL_COORDS}, "spans": {}}
@@ -153,16 +167,35 @@ class ProtocolParsingTests(unittest.TestCase):
             parsed["protocol_errors"],
         )
 
-    def test_builder_requires_one_element_and_no_extra_text(self):
-        self.assertEqual(
-            "A0012",
-            parse_builder_response("<action_id>A0012</action_id>")["action_id"],
-        )
-        parsed = parse_builder_response(
+    def test_builder_accepts_one_unique_id_and_rejects_ambiguity(self):
+        exact = parse_builder_response("<action_id>A0012</action_id>")
+        self.assertEqual("A0012", exact["action_id"])
+        self.assertEqual("exact", exact["parse_mode"])
+
+        recovered = parse_builder_response(
             "I choose <action_id>A0012</action_id> because it is supported."
         )
-        self.assertIsNone(parsed["action_id"])
-        self.assertIsNotNone(parsed["parse_error"])
+        self.assertEqual("A0012", recovered["action_id"])
+        self.assertEqual("recovered", recovered["parse_mode"])
+
+        repeated = parse_builder_response("A0012 is my choice; final answer: A0012")
+        self.assertEqual("A0012", repeated["action_id"])
+        self.assertEqual("recovered", repeated["parse_mode"])
+
+        tagged_final = parse_builder_response(
+            "I considered A0012, then chose <action_id>A0013</action_id>."
+        )
+        self.assertEqual("A0013", tagged_final["action_id"])
+        self.assertEqual("recovered", tagged_final["parse_mode"])
+
+        ambiguous = parse_builder_response("I considered A0012 but selected A0013")
+        self.assertIsNone(ambiguous["action_id"])
+        self.assertEqual("invalid", ambiguous["parse_mode"])
+        self.assertIsNotNone(ambiguous["parse_error"])
+
+        missing = parse_builder_response("I cannot choose an action.")
+        self.assertIsNone(missing["action_id"])
+        self.assertEqual("invalid", missing["parse_mode"])
 
     def test_summary_exposes_protocol_validity_rates(self):
         experiment = {
@@ -202,6 +235,27 @@ class ProtocolParsingTests(unittest.TestCase):
 
 
 class DebateBoundaryTests(unittest.TestCase):
+    def run_one_round_with_builder(self, builder):
+        config = json.loads((ROOT / "config" / "debate_config.json").read_text())
+        config["debate"]["max_rounds"] = 1
+        structure = load_structures(ROOT / "benchmark" / "craft_structures_20.json")[0]
+        phase1 = RecordingMock()
+        reconciliation = RecordingMock()
+        debate = Debate(
+            config=config,
+            structure_data=structure,
+            structure_index=0,
+            run_index=1,
+            clients={
+                "phase1": phase1,
+                "reconciliation": reconciliation,
+                "builder": builder,
+            },
+            verbose=False,
+        )
+        game = asyncio.run(debate.run())
+        return game, phase1, reconciliation
+
     def test_fixed_seven_calls_and_prompt_boundaries(self):
         config = json.loads((ROOT / "config" / "debate_config.json").read_text())
         config["debate"]["max_rounds"] = 1
@@ -303,6 +357,30 @@ class DebateBoundaryTests(unittest.TestCase):
             self.assertIn('"protocol_valid": false', call["user"])
             self.assertNotIn("Actual observation outside the element", call["user"])
             self.assertNotIn("PLACE gs AT (0,0) LAYER 0\n", call["user"])
+
+    def test_recovered_builder_id_executes_without_changing_topology(self):
+        builder = FixedBuilderMock(
+            "I choose <action_id>A0001</action_id> because it has the strongest support."
+        )
+        game, phase1, reconciliation = self.run_one_round_with_builder(builder)
+        round_record = game["rounds"][0]
+
+        self.assertEqual(
+            (3, 3, 1),
+            (len(phase1.calls), len(reconciliation.calls), len(builder.calls)),
+        )
+        self.assertEqual("recovered", round_record["builder"]["parse_mode"])
+        self.assertTrue(round_record["builder"]["protocol_valid"])
+        self.assertTrue(round_record["execution"]["ok"])
+
+    def test_out_of_mask_builder_id_is_still_rejected(self):
+        builder = FixedBuilderMock("<action_id>A9999</action_id>")
+        game, _, _ = self.run_one_round_with_builder(builder)
+        round_record = game["rounds"][0]
+
+        self.assertEqual("A9999", round_record["builder"]["action_id"])
+        self.assertFalse(round_record["builder"]["protocol_valid"])
+        self.assertFalse(round_record["execution"]["ok"])
 
 
 if __name__ == "__main__":
