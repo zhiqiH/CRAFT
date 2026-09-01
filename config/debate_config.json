@@ -45,10 +45,10 @@
       "max_tokens": 512
     },
     "builder": {
-      "model": "mistral:7b-instruct-v0.3-q8_0",
-      "provider": "ollama",
-      "temperature": 0.0,
-      "max_tokens": 512
+      "model": "gpt-4o-mini",
+      "provider": "openai",
+      "temperature": 0.1,
+      "max_tokens": 250
     }
   },
   "output": {

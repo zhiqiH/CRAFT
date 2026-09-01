@@ -126,6 +126,19 @@ def make_debate(phase1, reconciliation, builder, max_rounds=1):
     )
 
 
+class DefaultConfigTests(unittest.TestCase):
+    def test_mistral_directors_and_openai_4o_mini_builder(self):
+        config = json.loads((ROOT / "config" / "debate_config.json").read_text())
+        stages = config["stages"]
+        for stage in ("phase1", "reconciliation"):
+            self.assertEqual("ollama", stages[stage]["provider"])
+            self.assertEqual(
+                "mistral:7b-instruct-v0.3-q8_0", stages[stage]["model"]
+            )
+        self.assertEqual("openai", stages["builder"]["provider"])
+        self.assertEqual("gpt-4o-mini", stages["builder"]["model"])
+
+
 class PhysicalValidationTests(unittest.TestCase):
     def setUp(self):
         self.empty = {"structure": {coord: [] for coord in ALL_COORDS}, "spans": {}}

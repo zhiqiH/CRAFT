@@ -234,7 +234,7 @@ LAST PUBLIC BUILDER RESULT:
 {previous_builder_result or '(none)'}
 
 RESPONSE CONTRACT:
-Return exactly these two XML elements and no others. Keep analysis under 180 words.
+Return exactly these two XML elements and no others. Keep analysis under 100 words.
 <analysis>Your private interpretation and physical checks.</analysis>
 <move>one complete action line</move>
 

@@ -71,12 +71,14 @@ Builder 输出动作后，`validate_physical_action` 只依据当前公开棋盘
 澄清问题都会进入下一轮公开历史，控制台同时显示连续未执行轮数，避免再次把长期停滞误判
 成模型仍在有效推进。
 
-## 使用 Mistral-7B 运行 craft-20-hollow
+## 使用 Mistral-7B Directors + GPT-4o mini Builder
 
-默认配置已将 Phase 1、reconciliation 和 Builder 三个阶段都设为
-`mistral:7b-instruct-v0.3-q8_0`，benchmark 为 `craft-20-hollow`。
+默认配置中，Phase 1 和 reconciliation 使用
+`mistral:7b-instruct-v0.3-q8_0`；Builder 与论文实验保持一致，只使用 OpenAI
+`gpt-4o-mini`。默认 benchmark 为 `craft-20-hollow`。
 
-先完成本地模型与项目准备：
+先完成本地 Director 模型、OpenAI key 和项目依赖准备。OpenAI key 可放在
+`.secret/openai_api_key`，也可通过 `OPENAI_API_KEY` 环境变量提供：
 
 ```bash
 ollama pull mistral:7b-instruct-v0.3-q8_0
@@ -91,7 +93,7 @@ python3 scripts/run_debate.py \
   --benchmark craft-20-hollow \
   --structures 0 \
   --runs 1 \
-  --name craft20-hollow-mistral7b-generative-v3-s0-r1
+  --name craft20-hollow-mistral7b-directors-gpt4omini-builder-v3-s0-r1
 ```
 
 确认每轮日志均为 `p1:3/3`、`rec:3/3`，且 Builder 的 `parse`、`physics`、`executed`
@@ -102,7 +104,7 @@ python3 scripts/run_debate.py \
   --benchmark craft-20-hollow \
   --structures 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19 \
   --runs 1 \
-  --name craft20-hollow-mistral7b-generative-v3-r1
+  --name craft20-hollow-mistral7b-directors-gpt4omini-builder-v3-r1
 ```
 
 无 API key 时可用确定性 mock 验证完整链路：

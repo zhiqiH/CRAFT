@@ -50,7 +50,7 @@ def resolve_stage_config(stage: str, config: dict) -> dict:
         "provider": "openai",
         "temperature": config.get("temperature", 0.7),
         "max_tokens": int(config.get("max_completion_tokens", 2000)),
-        "api_key": "openai_api_key",
+        "api_key": None,
         "thinking": None,
     }
     legacy_stage = {
@@ -69,9 +69,10 @@ def make_client(stage_cfg: dict, mock: bool, api_cfg: dict) -> Any:
         return MockLLM(model=stage_cfg["model"])
 
     provider = PROVIDERS.get(stage_cfg["provider"], PROVIDERS["openai"])
+    key_name = stage_cfg.get("api_key") or provider["secret_file"]
     api_key = load_api_key(
         PROJECT_ROOT,
-        key_name=stage_cfg.get("api_key", provider["secret_file"]),
+        key_name=key_name,
         env_var=provider["env_var"],
     )
     if not api_key and stage_cfg["provider"] == "ollama":
@@ -81,7 +82,7 @@ def make_client(stage_cfg: dict, mock: bool, api_cfg: dict) -> Any:
     if not api_key:
         raise RuntimeError(
             f"no API key for {stage_cfg['provider']} — set {provider['env_var']} "
-            f"or put it in .secret/{stage_cfg.get('api_key', provider['secret_file'])}"
+            f"or put it in .secret/{key_name}"
         )
 
     extra_body = {}
