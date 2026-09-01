@@ -73,6 +73,39 @@ def build_summary(experiment: Dict[str, Any]) -> Dict[str, Any]:
         )
 
     final_scores = [g["final_progress"] for g in per_game]
+    protocol_rows = [
+        round_item["protocol_status"]
+        for game in games
+        for round_item in game.get("rounds", [])
+        if "protocol_status" in round_item
+    ]
+    protocol_quality = None
+    if protocol_rows:
+        phase1_total = sum(row["phase1_total"] for row in protocol_rows)
+        phase1_valid = sum(row["phase1_valid"] for row in protocol_rows)
+        reconciliation_total = sum(row["reconciliation_total"] for row in protocol_rows)
+        reconciliation_valid = sum(row["reconciliation_valid"] for row in protocol_rows)
+        builder_total = len(protocol_rows)
+        builder_valid = sum(bool(row["builder_valid"]) for row in protocol_rows)
+        protocol_quality = {
+            "phase1_valid": phase1_valid,
+            "phase1_total": phase1_total,
+            "phase1_valid_rate": round(phase1_valid / phase1_total, 6)
+            if phase1_total
+            else 0.0,
+            "reconciliation_valid": reconciliation_valid,
+            "reconciliation_total": reconciliation_total,
+            "reconciliation_valid_rate": round(
+                reconciliation_valid / reconciliation_total, 6
+            )
+            if reconciliation_total
+            else 0.0,
+            "builder_valid": builder_valid,
+            "builder_total": builder_total,
+            "builder_valid_rate": round(builder_valid / builder_total, 6)
+            if builder_total
+            else 0.0,
+        }
     return {
         "experiment": experiment.get("experiment", {}),
         "max_rounds": max_rounds,
@@ -85,5 +118,6 @@ def build_summary(experiment: Dict[str, Any]) -> Dict[str, Any]:
             if final_scores
             else 0.0,
             "final_overall_progress_by_round": means[-1] if means else None,
+            "protocol_quality": protocol_quality,
         },
     }

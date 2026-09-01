@@ -248,6 +248,14 @@ def main() -> int:
         f"Summary: {agg['n_games']} game(s), {agg['n_completed']} completed, "
         f"mean final progress={agg['mean_final_progress']:.4f}"
     )
+    quality = agg.get("protocol_quality")
+    if quality:
+        print(
+            "Protocol validity: "
+            f"phase1={quality['phase1_valid_rate']:.1%}, "
+            f"reconciliation={quality['reconciliation_valid_rate']:.1%}, "
+            f"builder={quality['builder_valid_rate']:.1%}"
+        )
     return 0
 
 

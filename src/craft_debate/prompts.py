@@ -62,6 +62,17 @@ D1 sees (0,0), (1,0), (2,0) from left to right.
 D2 sees (0,0), (0,1), (0,2) from left to right.
 D3 sees (0,2), (1,2), (2,2) from left to right."""
 
+DIRECTOR_ACTION_GRAMMAR = """CANONICAL ACTION GRAMMAR:
+Use exactly one of these forms in an action element:
+- PLACE BLOCK_CODE AT POSITION LAYER L
+- PLACE BLOCK_CODE AT POSITION LAYER L SPAN_TO POSITION
+- REMOVE AT POSITION LAYER L
+- REMOVE AT POSITION LAYER L SPAN_TO POSITION
+Replace every uppercase parameter token with a concrete value. Keywords PLACE, AT,
+LAYER, SPAN_TO, and REMOVE stay uppercase. BLOCK_CODE is one of gs/gl/bs/bl/rs/rl/
+ys/yl/os/ol; POSITION is a coordinate such as those shown on the public board; L is
+0, 1, or 2. SPAN_TO is required for a large block and forbidden for a small block."""
+
 
 def _json_dumps(value: Any) -> str:
     return json.dumps(value, indent=2, ensure_ascii=False)
@@ -87,6 +98,8 @@ any oracle action, target-conditioned ranking, or ground-truth progress/score.
 
 {PERSPECTIVE_DESCRIPTIONS[director_id]}
 {SPATIAL_ORIENTATION}
+{BLOCK_ENCODING_REFERENCE}
+{DIRECTOR_ACTION_GRAMMAR}
 Private-view row_0/row_1/row_2 mean bottom/middle/top LAYERS. Within each layer,
 entries run left-to-right in your own frame. color=none means empty; size=2 means
 a large block when the adjacent matching entry is also size=2.
@@ -95,11 +108,11 @@ Compare your private view with the public board. Recommend exactly one primitive
 PLACE or REMOVE action. If evidence is insufficient, still give the best concrete
 proposal and lower confidence. Do not claim access to another view.
 
-Return exactly these tags:
-<observation>Relevant private evidence, concise but spatially precise.</observation>
-<proposed_action>One concrete PLACE or REMOVE recommendation.</proposed_action>
-<reasoning>Why that action follows from your evidence and public physics.</reasoning>
-<confidence>A number from 0 to 1.</confidence>
+Return exactly four XML elements, in this order, with no text outside them. The
+element names are `observation`, `proposed_action`, `reasoning`, and `confidence`.
+Write your own value inside every element; never repeat these field descriptions.
+`proposed_action` must contain only one action in CANONICAL ACTION GRAMMAR.
+`confidence` must contain only a decimal number from 0 to 1.
 
 CURRENT PUBLIC BOARD:
 {_json_dumps(public_state)}
@@ -120,7 +133,7 @@ def build_reconciliation_prompt(
     archetype: str,
     private_view: Dict[str, Any],
     public_state: Dict[str, Any],
-    phase1_messages: Dict[str, Dict[str, str]],
+    phase1_messages: Dict[str, Dict[str, Any]],
     public_history: str,
     previous_builder_result: Optional[str],
 ) -> str:
@@ -137,17 +150,20 @@ Identify agreement and contradictions, correct your earlier claim if needed, and
 judge when another Director likely has complementary evidence. Finish with exactly
 one revised primitive action recommendation and calibrated confidence.
 
-Return exactly these tags:
-<agreement>What the messages consistently support.</agreement>
-<contradictions>Conflicts or uncertainty; use "none" if absent.</contradictions>
-<revision>How your Phase-1 claim changes, or "unchanged".</revision>
-<complementary_evidence>Which other Director may know something useful and why.</complementary_evidence>
-<recommended_action>One concrete PLACE or REMOVE recommendation.</recommended_action>
-<reasoning>Concise reconciliation grounded in your private evidence.</reasoning>
-<confidence>A number from 0 to 1.</confidence>
+Some serialized Phase-1 messages may have `protocol_valid=false`; ignore their
+semantic content and do not infer what they intended.
+
+Return exactly seven XML elements, in this order, with no text outside them. The
+element names are `agreement`, `contradictions`, `revision`,
+`complementary_evidence`, `recommended_action`, `reasoning`, and `confidence`.
+Write your own value inside every element; never repeat these field descriptions.
+`recommended_action` must contain only one action in CANONICAL ACTION GRAMMAR.
+`confidence` must contain only a decimal number from 0 to 1.
 
 {PERSPECTIVE_DESCRIPTIONS[director_id]}
 {SPATIAL_ORIENTATION}
+{BLOCK_ENCODING_REFERENCE}
+{DIRECTOR_ACTION_GRAMMAR}
 
 CURRENT PUBLIC BOARD:
 {_json_dumps(public_state)}
@@ -169,7 +185,7 @@ def build_builder_prompt(
     *,
     builder_id: str,
     public_state: Dict[str, Any],
-    reconciliations: Dict[str, Dict[str, str]],
+    reconciliations: Dict[str, Dict[str, Any]],
     legal_actions: List[Dict[str, Any]],
 ) -> str:
     """Builder prompt containing exactly the allowed three input classes."""
@@ -185,8 +201,10 @@ Interpret Director-relative descriptions using:
 
 Every action in LEGAL ACTION MASK is physically legal but may be wrong for the hidden
 target. Select the action best supported by the reconciliations. Do not invent or
-rewrite an action. Return its ID exactly once in this format and nothing else:
-<action_id>A0001</action_id>
+rewrite an action. A reconciliation with `protocol_valid=false` has been quarantined;
+do not infer its missing semantic content. Return exactly one XML element named
+`action_id`, containing one ID copied from the current mask, with no other text. No
+sample action ID is provided because the ID must come from the current mask.
 
 CURRENT PUBLIC BOARD:
 {_json_dumps(public_state)}

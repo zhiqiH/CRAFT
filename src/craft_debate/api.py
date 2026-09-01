@@ -147,7 +147,7 @@ class MockLLM:
         elif kind == "observation":
             content = (
                 "<observation>My wall has a missing bottom support.</observation>\n"
-                "<proposed_action>Place a small block at that bottom position.</proposed_action>\n"
+                "<proposed_action>PLACE gs AT (0,0) LAYER 0</proposed_action>\n"
                 "<reasoning>The public board shows the position is empty.</reasoning>\n"
                 "<confidence>0.5</confidence>"
             )
@@ -157,7 +157,7 @@ class MockLLM:
                 "<contradictions>Block identity is uncertain.</contradictions>\n"
                 "<revision>unchanged</revision>\n"
                 "<complementary_evidence>The other walls may resolve the position.</complementary_evidence>\n"
-                "<recommended_action>Choose the most supported legal bottom placement.</recommended_action>\n"
+                "<recommended_action>PLACE gs AT (0,0) LAYER 0</recommended_action>\n"
                 "<reasoning>This is consistent with the public empty board.</reasoning>\n"
                 "<confidence>0.4</confidence>"
             )

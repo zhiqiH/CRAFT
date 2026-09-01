@@ -8,7 +8,7 @@ import re
 import time
 from typing import Any, Dict, List, Optional
 
-from .domain import get_director_views
+from .domain import get_director_views, norm_pos
 from .environment import (
     GameState,
     get_all_physically_legal_actions,
@@ -33,6 +33,30 @@ BUILDER_SYSTEM = (
     "You are the CRAFT Builder. Select exactly one ID from the supplied complete legal mask."
 )
 
+DIRECTOR_PLACE_PATTERN = re.compile(
+    r"^PLACE\s+(?P<block>[GBRYO][SL])\s+AT\s+"
+    r"(?P<position>\([0-2]\s*,\s*[0-2]\))\s+LAYER\s+(?P<layer>[0-2])"
+    r"(?:\s+SPAN_TO\s+(?P<span_to>\([0-2]\s*,\s*[0-2]\)))?$",
+    re.IGNORECASE,
+)
+DIRECTOR_REMOVE_PATTERN = re.compile(
+    r"^REMOVE\s+AT\s+(?P<position>\([0-2]\s*,\s*[0-2]\))\s+"
+    r"LAYER\s+(?P<layer>[0-2])"
+    r"(?:\s+SPAN_TO\s+(?P<span_to>\([0-2]\s*,\s*[0-2]\)))?$",
+    re.IGNORECASE,
+)
+DIRECTOR_TEMPLATE_VALUES = {
+    "relevant private evidence, concise but spatially precise.",
+    "one concrete place or remove recommendation.",
+    "why that action follows from your evidence and public physics.",
+    "a number from 0 to 1.",
+    "what the messages consistently support.",
+    'conflicts or uncertainty; use "none" if absent.',
+    'how your phase-1 claim changes, or "unchanged".',
+    "which other director may know something useful and why.",
+    "concise reconciliation grounded in your private evidence.",
+}
+
 
 def _extract_tag(text: str, tag: str) -> Optional[str]:
     match = re.search(rf"<{tag}>\s*(.*?)\s*</{tag}>", text, re.DOTALL | re.IGNORECASE)
@@ -41,13 +65,114 @@ def _extract_tag(text: str, tag: str) -> Optional[str]:
     return None
 
 
-def _structured_fields(text: str, fields: List[str]) -> Dict[str, str]:
-    return {field: _extract_tag(text, field) or "" for field in fields}
+def _parse_director_action(text: str) -> tuple[Optional[Dict[str, Any]], Optional[str]]:
+    """Parse the protocol's target-free canonical Director action grammar."""
+    place = DIRECTOR_PLACE_PATTERN.fullmatch(text.strip())
+    if place:
+        block = place.group("block").lower()
+        span_to = norm_pos(place.group("span_to")) if place.group("span_to") else None
+        if block.endswith("l") and span_to is None:
+            return None, "Large-block PLACE requires SPAN_TO"
+        if block.endswith("s") and span_to is not None:
+            return None, "Small-block PLACE must not include SPAN_TO"
+        return {
+            "action": "place",
+            "block": block,
+            "position": norm_pos(place.group("position")),
+            "layer": int(place.group("layer")),
+            "span_to": span_to,
+        }, None
+
+    remove = DIRECTOR_REMOVE_PATTERN.fullmatch(text.strip())
+    if remove:
+        return {
+            "action": "remove",
+            "block": None,
+            "position": norm_pos(remove.group("position")),
+            "layer": int(remove.group("layer")),
+            "span_to": norm_pos(remove.group("span_to")) if remove.group("span_to") else None,
+        }, None
+
+    return None, (
+        "Action must match canonical PLACE/REMOVE grammar with block code, position, "
+        "layer, and span_to when needed"
+    )
+
+
+def parse_director_response(
+    text: str, *, fields: List[str], action_field: str
+) -> Dict[str, Any]:
+    """Parse and validate one Director message without making another LLM call."""
+    parsed: Dict[str, Any] = {}
+    errors: List[str] = []
+    residual = text
+
+    for field in fields:
+        pattern = rf"<{field}>\s*(.*?)\s*</{field}>"
+        values = re.findall(pattern, text, re.DOTALL | re.IGNORECASE)
+        if len(values) != 1:
+            errors.append(f"Expected exactly one <{field}> element, found {len(values)}")
+        value = values[0].strip() if values else ""
+        parsed[field] = value
+        if not value:
+            errors.append(f"<{field}> is empty")
+        elif value.lower() in DIRECTOR_TEMPLATE_VALUES:
+            errors.append(f"<{field}> copied a protocol description instead of a value")
+        residual = re.sub(pattern, "", residual, flags=re.DOTALL | re.IGNORECASE)
+
+    if residual.strip():
+        errors.append("Response contains text outside the required elements")
+
+    normalized_action, action_error = _parse_director_action(parsed.get(action_field, ""))
+    if action_error:
+        errors.append(f"<{action_field}>: {action_error}")
+
+    confidence_value: Optional[float] = None
+    try:
+        confidence_value = float(parsed.get("confidence", ""))
+        if not 0.0 <= confidence_value <= 1.0:
+            raise ValueError
+    except (TypeError, ValueError):
+        errors.append("<confidence> must be a number from 0 to 1")
+        confidence_value = None
+
+    return {
+        **parsed,
+        "normalized_action": normalized_action,
+        "confidence_value": confidence_value,
+        "protocol_valid": not errors,
+        "protocol_errors": errors,
+    }
+
+
+def _communication_payload(item: Dict[str, Any], fields: List[str]) -> Dict[str, Any]:
+    """Pass only validated structured content across a protocol edge."""
+    if not item["protocol_valid"]:
+        return {
+            "protocol_valid": False,
+            "protocol_errors": list(item["protocol_errors"]),
+        }
+    return {
+        "protocol_valid": True,
+        **{field: item[field] for field in fields},
+        "normalized_action": copy.deepcopy(item["normalized_action"]),
+        "confidence_value": item["confidence_value"],
+    }
 
 
 def parse_builder_response(text: str) -> Dict[str, Any]:
-    wrapped = _extract_tag(text, "action_id")
-    candidate = (wrapped or "").strip().upper()
+    pattern = r"<action_id>\s*(.*?)\s*</action_id>"
+    values = re.findall(pattern, text, re.DOTALL | re.IGNORECASE)
+    residual = re.sub(pattern, "", text, flags=re.DOTALL | re.IGNORECASE)
+    candidate = (values[0] if len(values) == 1 else "").strip().upper()
+    if len(values) != 1 or residual.strip():
+        return {
+            "action_id": None,
+            "parse_error": (
+                "Builder response must contain exactly one <action_id> element and no other text"
+            ),
+            "raw_response": text,
+        }
     if not re.fullmatch(r"A\d{4,}", candidate):
         return {
             "action_id": None,
@@ -212,13 +337,9 @@ class Debate:
         )
         phase1_latency = round(time.monotonic() - phase_started, 3)
         record["phase1"] = observations
+        phase1_fields = ["observation", "proposed_action", "reasoning", "confidence"]
         phase1_messages = {
-            item["director_id"]: {
-                "observation": item["observation"],
-                "proposed_action": item["proposed_action"],
-                "reasoning": item["reasoning"],
-                "confidence": item["confidence"],
-            }
+            item["director_id"]: _communication_payload(item, phase1_fields)
             for item in observations
         }
 
@@ -233,19 +354,17 @@ class Debate:
         )
         reconciliation_latency = round(time.monotonic() - phase_started, 3)
         record["reconciliation"] = reconciliations
+        reconciliation_fields = [
+            "agreement",
+            "contradictions",
+            "revision",
+            "complementary_evidence",
+            "recommended_action",
+            "reasoning",
+            "confidence",
+        ]
         reconciliation_messages = {
-            item["director_id"]: {
-                key: item[key]
-                for key in (
-                    "agreement",
-                    "contradictions",
-                    "revision",
-                    "complementary_evidence",
-                    "recommended_action",
-                    "reasoning",
-                    "confidence",
-                )
-            }
+            item["director_id"]: _communication_payload(item, reconciliation_fields)
             for item in reconciliations
         }
 
@@ -271,15 +390,29 @@ class Debate:
             (action for action in legal_actions if action["id"] == builder["action_id"]),
             None,
         )
+        builder_protocol_error = builder.get("parse_error")
+        if builder_protocol_error is None and selected is None:
+            builder_protocol_error = "Selected action ID is not in the current legal mask"
         builder.update(
             {
                 "selected_action": copy.deepcopy(selected),
                 "prompt": builder_prompt,
                 "usage": builder_response.get("usage", {}),
                 "latency_seconds": builder_response.get("latency_seconds"),
+                "protocol_valid": builder_protocol_error is None,
+                "protocol_errors": [builder_protocol_error] if builder_protocol_error else [],
             }
         )
         record["builder"] = builder
+        record["protocol_status"] = {
+            "phase1_valid": sum(item["protocol_valid"] for item in observations),
+            "phase1_total": len(observations),
+            "reconciliation_valid": sum(
+                item["protocol_valid"] for item in reconciliations
+            ),
+            "reconciliation_total": len(reconciliations),
+            "builder_valid": builder["protocol_valid"],
+        }
         record["phase_latency_seconds"] = {
             "phase1": phase1_latency,
             "reconciliation": reconciliation_latency,
@@ -321,8 +454,9 @@ class Debate:
         response = await self.clients["phase1"].complete(
             OBSERVATION_SYSTEM, prompt, {"kind": "observation", "director_id": director_id}
         )
-        parsed = _structured_fields(
-            response["content"], ["observation", "proposed_action", "reasoning", "confidence"]
+        fields = ["observation", "proposed_action", "reasoning", "confidence"]
+        parsed = parse_director_response(
+            response["content"], fields=fields, action_field="proposed_action"
         )
         return {
             "agent_id": role.get("id", director_id),
@@ -339,7 +473,7 @@ class Debate:
         self,
         role: Dict[str, str],
         public_state: Dict[str, Any],
-        phase1_messages: Dict[str, Dict[str, str]],
+        phase1_messages: Dict[str, Dict[str, Any]],
         history: str,
     ) -> Dict[str, Any]:
         director_id = role["director"]
@@ -366,7 +500,9 @@ class Debate:
             "reasoning",
             "confidence",
         ]
-        parsed = _structured_fields(response["content"], fields)
+        parsed = parse_director_response(
+            response["content"], fields=fields, action_field="recommended_action"
+        )
         return {
             "agent_id": role.get("id", director_id),
             "director_id": director_id,

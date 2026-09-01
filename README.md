@@ -23,6 +23,19 @@ Builder 从完整 legal-action mask 中选择一个 action ID
   不进入任何 Director 或 Builder prompt。
 - target 只留在环境初始化与动作执行后的离线评价记录中。
 
+## 通信协议
+
+拓扑固定为每轮 `3 + 3 + 1`，协议校验不会增加 LLM 调用：
+
+- Phase 1：每个 Director 返回且仅返回 observation、proposed_action、reasoning、
+  confidence 四个 XML 元素；action 使用统一的 PLACE/REMOVE 语法。
+- Reconciliation：同一批 Director 只接收三份经过本地校验的 Phase-1 消息；无效消息
+  只传递 `protocol_valid=false` 和错误原因，不传递未经验证的语义内容。
+- Builder：只接收公开棋盘、三份经过校验的 reconciliation 和完整 legal-action mask，
+  且仅返回一个来自当前 mask 的 action ID。
+- 本地校验严格检查标签数量、标签外文本、模板回显、action 语法和 confidence 范围。
+  校验失败会被记录和隔离，不重试、不调用 oracle，也不改变 `3 + 3 + 1` 拓扑。
+
 `get_all_physically_legal_actions(current_public_state)` 仅使用公开结构、公开 span 和确定性
 物理规则枚举全部 PLACE/REMOVE primitive actions。它不会按正确性或进度筛选，Builder 选择的
 动作可能对 hidden target 是错的，但一定会先经过 `validate_physical_action` 校验。
@@ -64,6 +77,7 @@ python3 scripts/run_debate.py \
 - Builder 选择的 action ID、usage 和 latency；
 - 独立的 deterministic physical validation 和 execution 结果；
 - `evaluation` 下的 target-derived score，以及三阶段 wall-clock latency。
+- `protocol_status` 下三阶段的消息有效数；汇总结果另含 protocol validity rate。
 
 产物写入：
 

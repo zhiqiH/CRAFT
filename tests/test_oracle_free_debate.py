@@ -16,7 +16,12 @@ from craft_debate.environment import (  # noqa: E402
     get_all_physically_legal_actions,
     validate_physical_action,
 )
-from craft_debate.topology import Debate  # noqa: E402
+from craft_debate.io import build_summary  # noqa: E402
+from craft_debate.topology import (  # noqa: E402
+    Debate,
+    parse_builder_response,
+    parse_director_response,
+)
 
 
 class RecordingMock(MockLLM):
@@ -27,6 +32,25 @@ class RecordingMock(MockLLM):
     async def complete(self, system, user, meta=None):
         self.calls.append({"system": system, "user": user, "meta": copy.deepcopy(meta or {})})
         return await super().complete(system, user, meta)
+
+
+class TemplateEchoMock(RecordingMock):
+    async def complete(self, system, user, meta=None):
+        self.calls.append({"system": system, "user": user, "meta": copy.deepcopy(meta or {})})
+        return {
+            "content": (
+                "<observation>Relevant private evidence, concise but spatially precise.</observation>\n"
+                "Actual observation outside the element.\n"
+                "<proposed_action>One concrete PLACE or REMOVE recommendation.</proposed_action>\n"
+                "PLACE gs AT (0,0) LAYER 0\n"
+                "<reasoning>Why that action follows from your evidence and public physics.</reasoning>\n"
+                "Actual reasoning outside the element.\n"
+                "<confidence>A number from 0 to 1.</confidence>\n"
+                "0.9"
+            ),
+            "usage": {},
+            "latency_seconds": 0.0,
+        }
 
 
 class LegalActionMaskTests(unittest.TestCase):
@@ -74,6 +98,109 @@ class LegalActionMaskTests(unittest.TestCase):
         self.assertTrue(validate_physical_action(state.snapshot(), removals[0])[0])
 
 
+class ProtocolParsingTests(unittest.TestCase):
+    phase1_fields = ["observation", "proposed_action", "reasoning", "confidence"]
+
+    def test_valid_director_message_is_normalized(self):
+        response = (
+            "<observation>The bottom-left cell needs a green small block.</observation>\n"
+            "<proposed_action>PLACE gs AT (0,0) LAYER 0</proposed_action>\n"
+            "<reasoning>My private view and the public board agree.</reasoning>\n"
+            "<confidence>0.8</confidence>"
+        )
+        parsed = parse_director_response(
+            response,
+            fields=self.phase1_fields,
+            action_field="proposed_action",
+        )
+        self.assertTrue(parsed["protocol_valid"])
+        self.assertEqual(
+            {
+                "action": "place",
+                "block": "gs",
+                "position": "(0,0)",
+                "layer": 0,
+                "span_to": None,
+            },
+            parsed["normalized_action"],
+        )
+        self.assertEqual(0.8, parsed["confidence_value"])
+
+    def test_template_echo_and_outside_answer_are_quarantined(self):
+        response = (
+            "<observation>Relevant private evidence, concise but spatially precise.</observation>\n"
+            "Actual observation outside the element.\n"
+            "<proposed_action>One concrete PLACE or REMOVE recommendation.</proposed_action>\n"
+            "PLACE gs AT (0,0) LAYER 0\n"
+            "<reasoning>Why that action follows from your evidence and public physics.</reasoning>\n"
+            "Actual reasoning outside the element.\n"
+            "<confidence>A number from 0 to 1.</confidence>\n"
+            "0.9"
+        )
+        parsed = parse_director_response(
+            response,
+            fields=self.phase1_fields,
+            action_field="proposed_action",
+        )
+        self.assertFalse(parsed["protocol_valid"])
+        self.assertIsNone(parsed["normalized_action"])
+        self.assertIsNone(parsed["confidence_value"])
+        self.assertTrue(
+            any("copied a protocol description" in error for error in parsed["protocol_errors"])
+        )
+        self.assertIn(
+            "Response contains text outside the required elements",
+            parsed["protocol_errors"],
+        )
+
+    def test_builder_requires_one_element_and_no_extra_text(self):
+        self.assertEqual(
+            "A0012",
+            parse_builder_response("<action_id>A0012</action_id>")["action_id"],
+        )
+        parsed = parse_builder_response(
+            "I choose <action_id>A0012</action_id> because it is supported."
+        )
+        self.assertIsNone(parsed["action_id"])
+        self.assertIsNotNone(parsed["parse_error"])
+
+    def test_summary_exposes_protocol_validity_rates(self):
+        experiment = {
+            "games": [
+                {
+                    "structure_id": "s1",
+                    "structure_index": 0,
+                    "run_index": 1,
+                    "complexity": "easy",
+                    "baseline_progress": 0.0,
+                    "final_progress": 0.1,
+                    "completed": False,
+                    "rounds": [
+                        {
+                            "score": {
+                                "overall_progress": 0.1,
+                                "completion_percentage": 0.1,
+                                "iou_score": 0.1,
+                                "position_accuracy": 0.1,
+                            },
+                            "protocol_status": {
+                                "phase1_valid": 2,
+                                "phase1_total": 3,
+                                "reconciliation_valid": 3,
+                                "reconciliation_total": 3,
+                                "builder_valid": True,
+                            },
+                        }
+                    ],
+                }
+            ]
+        }
+        quality = build_summary(experiment)["aggregate"]["protocol_quality"]
+        self.assertEqual(0.666667, quality["phase1_valid_rate"])
+        self.assertEqual(1.0, quality["reconciliation_valid_rate"])
+        self.assertEqual(1.0, quality["builder_valid_rate"])
+
+
 class DebateBoundaryTests(unittest.TestCase):
     def test_fixed_seven_calls_and_prompt_boundaries(self):
         config = json.loads((ROOT / "config" / "debate_config.json").read_text())
@@ -101,7 +228,10 @@ class DebateBoundaryTests(unittest.TestCase):
         }
 
         game = asyncio.run(debate.run())
-        self.assertEqual((3, 3, 1), (len(phase1.calls), len(reconciliation.calls), len(builder.calls)))
+        self.assertEqual(
+            (3, 3, 1),
+            (len(phase1.calls), len(reconciliation.calls), len(builder.calls)),
+        )
         for call in phase1.calls:
             own = call["meta"]["director_id"]
             self.assertIn(f"PRIVATE_{own}", call["user"])
@@ -129,7 +259,50 @@ class DebateBoundaryTests(unittest.TestCase):
         for call_record in round_record["phase1"] + round_record["reconciliation"]:
             self.assertIn("usage", call_record)
             self.assertIn("latency_seconds", call_record)
+            self.assertTrue(call_record["protocol_valid"])
         self.assertIn("usage", round_record["builder"])
+        self.assertEqual(
+            {
+                "phase1_valid": 3,
+                "phase1_total": 3,
+                "reconciliation_valid": 3,
+                "reconciliation_total": 3,
+                "builder_valid": True,
+            },
+            round_record["protocol_status"],
+        )
+
+    def test_invalid_phase1_message_is_quarantined_without_changing_topology(self):
+        config = json.loads((ROOT / "config" / "debate_config.json").read_text())
+        config["debate"]["max_rounds"] = 1
+        structure = load_structures(ROOT / "benchmark" / "craft_structures_20.json")[0]
+        phase1 = TemplateEchoMock()
+        reconciliation = RecordingMock()
+        builder = RecordingMock()
+        debate = Debate(
+            config=config,
+            structure_data=structure,
+            structure_index=0,
+            run_index=1,
+            clients={
+                "phase1": phase1,
+                "reconciliation": reconciliation,
+                "builder": builder,
+            },
+            verbose=False,
+        )
+
+        game = asyncio.run(debate.run())
+
+        self.assertEqual(
+            (3, 3, 1),
+            (len(phase1.calls), len(reconciliation.calls), len(builder.calls)),
+        )
+        self.assertEqual(0, game["rounds"][0]["protocol_status"]["phase1_valid"])
+        for call in reconciliation.calls:
+            self.assertIn('"protocol_valid": false', call["user"])
+            self.assertNotIn("Actual observation outside the element", call["user"])
+            self.assertNotIn("PLACE gs AT (0,0) LAYER 0\n", call["user"])
 
 
 if __name__ == "__main__":
