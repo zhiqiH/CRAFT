@@ -9,9 +9,6 @@ import time
 from pathlib import Path
 from typing import Any, Dict, Optional
 
-from .domain import ALL_COORDS
-
-
 def load_api_key(
     project_root: Path,
     key_name: str = "openai_api_key",
@@ -141,61 +138,12 @@ class MockLLM:
     ) -> Dict[str, Any]:
         meta = meta or {}
         kind = meta.get("kind", "agent")
-        if kind == "proposer":
+        if kind == "director":
             content = (
-                "<think>Mock Director checks its private wall for a missing block.</think>\n"
+                "<analysis>Mock Director checks the private wall for a missing block.</analysis>\n"
                 "<message>Place the next missing block on my bottom layer.</message>"
             )
-        elif kind == "observation":
-            content = (
-                "<analysis>My wall shows a missing small green bottom support.</analysis>\n"
-                "<message>Please place a small green block at the left of my bottom layer.</message>"
-            )
-        elif kind == "reconciliation":
-            content = (
-                "<analysis>The public messages support one small green bottom placement.</analysis>\n"
-                "<message>Please place a small green block at the left of my bottom layer.</message>"
-            )
-        elif kind == "builder":
-            public_state = meta.get("public_state") or {}
-            structure = public_state.get("structure", public_state)
-            position = next(
-                (coord for coord in ALL_COORDS if len(structure.get(coord, [])) < 3),
-                None,
-            )
-            if position is not None:
-                layer = len(structure.get(position, []))
-                move = (
-                    f"PLACE:gs:{position}:{layer}:CONFIRM:"
-                    "Following the public Director instruction with a supported small block."
-                )
-            else:
-                position = next(coord for coord in ALL_COORDS if structure.get(coord))
-                stack = structure[position]
-                layer = len(stack) - 1
-                if stack[-1].endswith("l"):
-                    pairs = (public_state.get("spans") or {}).get(str(layer), [])
-                    partner = next(
-                        (b if a == position else a for a, b in pairs if position in (a, b)),
-                        None,
-                    )
-                    move = (
-                        f"REMOVE:{position}:{layer}:{partner}:CONFIRM:"
-                        "Removing the top large block as directed."
-                    )
-                else:
-                    move = (
-                        f"REMOVE:{position}:{layer}:CONFIRM:"
-                        "Removing the top small block as directed."
-                    )
-            content = (
-                "<analysis>I mapped the public instruction to the current board and "
-                "checked the stack height.</analysis>\n"
-                f"<move>{move}</move>"
-            )
         elif kind == "judge":
-            # Legacy paper-protocol mock. It intentionally remains scoped to that
-            # separate oracle-reproduction runner, never the Debate pipeline.
             oracle_moves = meta.get("oracle_moves") or []
             if not oracle_moves:
                 content = "<move>CLARIFY:no candidate move (mock)</move>"

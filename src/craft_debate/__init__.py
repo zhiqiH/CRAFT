@@ -1,3 +1,3 @@
-"""CRAFT x Debate: a generative 3+3+1 partial-observation pipeline."""
+"""CRAFT paper-protocol reproduction."""
 
 __version__ = "0.1.0"

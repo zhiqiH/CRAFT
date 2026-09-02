@@ -25,7 +25,6 @@ from .environment import GameState
 from .oracle import sample_oracle_moves
 from .progress import calculate_progress
 from .prompts import ARCHETYPES, BLOCK_ENCODING_REFERENCE, COORDINATE_REFERENCE, SPATIAL_ORIENTATION
-from .topology import parse_judge_response
 
 DIRECTOR_TYPES = ["assertive", "cautious", "observant", "skeptical", "synthesizer"]
 
@@ -66,6 +65,84 @@ def parse_director_response(text: str) -> Dict[str, str]:
         "public_message": message or "No message provided",
         "raw_response": text,
     }
+
+
+def parse_builder_response(text: str) -> Dict[str, Any]:
+    """Parse the paper's Builder action format."""
+    wrapped = re.search(r"<move>\s*(.*?)\s*</move>", text, re.DOTALL | re.IGNORECASE)
+    haystack = wrapped.group(1) if wrapped else text
+    match = re.search(
+        r"^\s*(PLACE|REMOVE|CLARIFY)\s*:(.*)$",
+        haystack,
+        re.MULTILINE | re.IGNORECASE,
+    )
+    if not match:
+        return {
+            "action": "unparsed",
+            "move": None,
+            "clarification": None,
+            "confirmation": "",
+            "parse_error": "No PLACE/REMOVE/CLARIFY line found",
+            "raw_response": text,
+        }
+
+    action = match.group(1).lower()
+    parts = [part.strip() for part in match.group(2).split(":")]
+    parsed: Dict[str, Any] = {
+        "action": action,
+        "move": None,
+        "clarification": None,
+        "confirmation": "",
+        "parse_error": None,
+        "raw_response": text,
+    }
+    if action == "clarify":
+        parsed["clarification"] = " ".join(parts)
+        return parsed
+
+    try:
+        if action == "place":
+            if len(parts) < 4:
+                raise ValueError("PLACE needs block:position:layer[:span_to]:CONFIRM")
+            block, position, layer = parts[0], parts[1], int(parts[2])
+            index = 3
+            span_to = None
+            if parts[index].lower() != "confirm":
+                span_to = parts[index]
+                index += 1
+            if parts[index].lower() != "confirm":
+                raise ValueError("Missing CONFIRM marker in PLACE line")
+            parsed["move"] = {
+                "action": "place",
+                "block": block.lower(),
+                "position": position,
+                "layer": layer,
+                "span_to": span_to,
+            }
+        else:
+            if len(parts) < 3:
+                raise ValueError("REMOVE needs position:layer[:span_to]:CONFIRM")
+            position, layer = parts[0], int(parts[1])
+            index = 2
+            span_to = None
+            if parts[index].lower() != "confirm":
+                span_to = parts[index]
+                index += 1
+            if parts[index].lower() != "confirm":
+                raise ValueError("Missing CONFIRM marker in REMOVE line")
+            parsed["move"] = {
+                "action": "remove",
+                "block": None,
+                "position": position,
+                "layer": layer,
+                "span_to": span_to,
+            }
+        parsed["confirmation"] = ":".join(parts[index + 1 :])
+    except (ValueError, IndexError) as exc:
+        parsed["action"] = "unparsed"
+        parsed["move"] = None
+        parsed["parse_error"] = str(exc)
+    return parsed
 
 
 def build_director_prompt(
@@ -470,7 +547,7 @@ class PaperGame:
             response = await self.director_client.complete(
                 DIRECTOR_SYSTEM.format(director_id=did),
                 prompt,
-                {"kind": "proposer", "director_id": did},
+                {"kind": "director", "director_id": did},
             )
             parsed = parse_director_response(response["content"])
             entry = {
@@ -601,8 +678,8 @@ class PaperGame:
                 candidates.append(cleaned)
         for cleaned in candidates:
             if re.match(r"^(PLACE|REMOVE|CLARIFY)\s*:", cleaned, re.IGNORECASE):
-                return parse_judge_response(cleaned)
-        return parse_judge_response(text.strip().strip("[]"))
+                return parse_builder_response(cleaned)
+        return parse_builder_response(text.strip().strip("[]"))
 
     def game_record(self) -> Dict[str, Any]:
         final_score = (

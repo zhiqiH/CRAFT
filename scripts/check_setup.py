@@ -28,7 +28,7 @@ def main() -> int:
     except ImportError:
         problems.append("package 'matplotlib' is missing — run: python3 -m pip install -e .")
 
-    config_path = PROJECT_ROOT / "config" / "debate_config.json"
+    config_path = PROJECT_ROOT / "config" / "paper_config.json"
     config = None
     if not config_path.is_file():
         problems.append(f"config missing: {config_path}")
@@ -55,9 +55,8 @@ def main() -> int:
 
     if config is not None:
         providers = set()
-        stages = config.get("stages") or {}
-        for stage in ("phase1", "reconciliation", "builder"):
-            providers.add((stages.get(stage) or {}).get("provider", "openai"))
+        for stage in ("director", "builder"):
+            providers.add((config.get(stage) or {}).get("provider", "openai"))
         key_sources = {
             "openai": ("openai_api_key", "OPENAI_API_KEY"),
             "deepseek": ("deepseek_api_key", "DEEPSEEK_API_KEY"),

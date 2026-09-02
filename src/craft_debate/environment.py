@@ -26,197 +26,7 @@ from .domain import (
     orthogonal_neighbors,
 )
 
-__all__ = [
-    "GameState",
-    "get_all_physically_legal_actions",
-    "get_director_views",
-    "validate_physical_action",
-]
-
-
-def _public_components(
-    public_state: Dict[str, Any],
-) -> Tuple[Dict[str, List[str]], Dict[int, List[Tuple[str, str]]]]:
-    """Return normalized board components without consulting a target."""
-    raw_structure = public_state.get("structure", public_state)
-    raw_spans = public_state.get("spans", {})
-    structure = {coord: list(raw_structure.get(coord, [])) for coord in ALL_COORDS}
-    spans = {
-        int(layer): [tuple(pair) for pair in pairs]
-        for layer, pairs in raw_spans.items()
-    }
-    return structure, spans
-
-
-def validate_physical_action(
-    public_state: Dict[str, Any],
-    action: Dict[str, Any],
-    available_blocks: Optional[List[str]] = None,
-) -> Tuple[bool, str, Dict[str, Any]]:
-    """Validate one primitive action using only public state and physics rules."""
-    structure, spans = _public_components(public_state)
-    blocks = list(available_blocks or AVAILABLE_BLOCKS)
-    move = {key: value for key, value in action.items() if key != "id"}
-    move.setdefault("span_to", None)
-
-    kind = move.get("action")
-    position = norm_pos(move.get("position"))
-    block = move.get("block")
-    layer = move.get("layer", 0)
-    span_to = norm_pos(move.get("span_to")) if move.get("span_to") else None
-
-    if kind not in {"place", "remove"}:
-        return False, f"Unknown action: {kind}", move
-    if position is None or position not in ALL_COORDS:
-        return False, f"Invalid position: {move.get('position')}", move
-    if not isinstance(layer, int):
-        return False, f"Layer must be an integer: {layer}", move
-    move["position"] = position
-
-    if kind == "place":
-        if block not in blocks:
-            return False, f"Block '{block}' not in available blocks", move
-        stack = structure[position]
-        if layer != len(stack):
-            return False, (
-                f"Wrong layer at {position}: got {layer}, expected {len(stack)} "
-                f"(stack has {len(stack)} blocks)"
-            ), move
-        if len(stack) >= 3:
-            return False, f"Stack full at {position} (3 blocks already)", move
-
-        if block.endswith("l"):
-            if span_to == position:
-                return False, f"span_to cannot be same as position: {position}", move
-            if not span_to:
-                return False, f"Large block '{block}' needs span_to", move
-            if position in INVISIBLE_CELLS or span_to in INVISIBLE_CELLS:
-                return False, (
-                    f"Illegal span into invisible cell: {position}<->{span_to}. "
-                    f"Large blocks cannot include {sorted(INVISIBLE_CELLS)}."
-                ), move
-            if span_to not in ALL_COORDS or span_to not in orthogonal_neighbors(position):
-                return False, f"span_to {span_to} is not adjacent to {position}", move
-            neighbor_stack = structure[span_to]
-            if len(neighbor_stack) != len(stack):
-                return False, (
-                    f"span_to {span_to} has {len(neighbor_stack)} blocks, "
-                    f"{position} has {len(stack)} — both must be at same height"
-                ), move
-            if len(neighbor_stack) >= 3:
-                return False, f"Neighbor {span_to} stack is already full", move
-            layer_spans = spans.get(layer, [])
-            if any(position in pair or span_to in pair for pair in layer_spans):
-                return False, (
-                    f"{position} or {span_to} already occupied by another span at layer {layer}"
-                ), move
-            move["span_to"] = span_to
-        elif span_to is not None:
-            return False, f"Small block '{block}' must not include span_to", move
-    else:
-        stack = structure[position]
-        if not stack:
-            return False, f"Cannot remove from {position} — stack is empty", move
-        if layer != len(stack) - 1:
-            return False, (
-                f"Cannot remove layer {layer} at {position} — "
-                f"must remove top block first (layer {len(stack) - 1})"
-            ), move
-        top_block = stack[-1]
-        if top_block.endswith("l"):
-            partner = next(
-                (b if a == position else a for a, b in spans.get(layer, []) if position in (a, b)),
-                None,
-            )
-            if partner is None:
-                return False, (
-                    f"Large block at {position} layer {layer} has no recorded span partner"
-                ), move
-            partner_stack = structure.get(partner, [])
-            if len(partner_stack) - 1 != layer or partner_stack[-1:] != [top_block]:
-                return False, f"Span partner {partner} is not removable at layer {layer}", move
-            if span_to != partner:
-                return False, (
-                    f"Incorrect span_to for large block removal at {position} layer {layer}: "
-                    f"got {span_to}, expected {partner}"
-                ), move
-            move["span_to"] = span_to
-        elif span_to is not None:
-            return False, "Small-block removal must not include span_to", move
-
-    return True, "ok", move
-
-
-def get_all_physically_legal_actions(
-    current_public_state: Dict[str, Any],
-    available_blocks: Optional[List[str]] = None,
-) -> List[Dict[str, Any]]:
-    """Enumerate the complete deterministic action mask from public state only."""
-    structure, spans = _public_components(current_public_state)
-    blocks = list(available_blocks or AVAILABLE_BLOCKS)
-    candidates: List[Dict[str, Any]] = []
-
-    for position in ALL_COORDS:
-        layer = len(structure[position])
-        if layer >= 3:
-            continue
-        for block in blocks:
-            if block.endswith("s"):
-                candidates.append(
-                    {"action": "place", "block": block, "position": position, "layer": layer, "span_to": None}
-                )
-
-    seen_pairs = set()
-    for position in ALL_COORDS:
-        for span_to in orthogonal_neighbors(position):
-            pair = tuple(sorted((position, span_to)))
-            if pair in seen_pairs:
-                continue
-            seen_pairs.add(pair)
-            if position in INVISIBLE_CELLS or span_to in INVISIBLE_CELLS:
-                continue
-            if len(structure[position]) != len(structure[span_to]):
-                continue
-            layer = len(structure[position])
-            if layer >= 3 or any(position in p or span_to in p for p in spans.get(layer, [])):
-                continue
-            for block in blocks:
-                if block.endswith("l"):
-                    candidates.append(
-                        {"action": "place", "block": block, "position": pair[0], "layer": layer, "span_to": pair[1]}
-                    )
-
-    seen_removals = set()
-    for position in ALL_COORDS:
-        stack = structure[position]
-        if not stack:
-            continue
-        layer = len(stack) - 1
-        block = stack[-1]
-        span_to = None
-        if block.endswith("l"):
-            span_to = next(
-                (b if a == position else a for a, b in spans.get(layer, []) if position in (a, b)),
-                None,
-            )
-            if span_to is None:
-                continue
-            key = (layer, tuple(sorted((position, span_to))))
-            if key in seen_removals:
-                continue
-            seen_removals.add(key)
-            position, span_to = sorted((position, span_to))
-        candidates.append(
-            {"action": "remove", "block": None, "position": position, "layer": layer, "span_to": span_to}
-        )
-
-    legal: List[Dict[str, Any]] = []
-    public = {"structure": structure, "spans": spans}
-    for candidate in candidates:
-        ok, _, normalized = validate_physical_action(public, candidate, blocks)
-        if ok:
-            legal.append({"id": f"A{len(legal) + 1:04d}", **normalized})
-    return legal
+__all__ = ["GameState", "get_director_views"]
 
 
 class GameState:
@@ -274,12 +84,85 @@ class GameState:
 
     # ------------------------------------------------------------- validation
     def validate_move(self, move: Dict[str, Any]) -> Tuple[bool, str]:
-        ok, reason, normalized = validate_physical_action(
-            self.snapshot(), move, self.available_blocks
-        )
-        move.clear()
-        move.update(normalized)
-        return ok, reason
+        action = move.get("action")
+        position = norm_pos(move.get("position"))
+        block = move.get("block")
+        layer = move.get("layer", 0)
+        span_to = norm_pos(move.get("span_to")) if move.get("span_to") else None
+
+        if action not in {"place", "remove"}:
+            return False, f"Unknown action: {action}"
+        if position is None or position not in ALL_COORDS:
+            return False, f"Invalid position: {move.get('position')}"
+        move["position"] = position
+
+        if action == "place":
+            if block not in self.available_blocks:
+                return False, f"Block '{block}' not in available blocks"
+            stack = self.current_structure[position]
+            if layer != len(stack):
+                return False, (
+                    f"Wrong layer at {position}: got {layer}, "
+                    f"expected {len(stack)} (stack has {len(stack)} blocks)"
+                )
+            if len(stack) >= 3:
+                return False, f"Stack full at {position} (3 blocks already)"
+
+            if block.endswith("l"):
+                if span_to == position:
+                    return False, f"span_to cannot be same as position: {position}"
+                if not span_to:
+                    return False, f"Large block '{block}' needs span_to"
+                if position in self.invisible_cells or span_to in self.invisible_cells:
+                    return False, (
+                        f"Illegal span into invisible cell: {position}<->{span_to}. "
+                        f"Large blocks cannot include {sorted(self.invisible_cells)}."
+                    )
+                if span_to not in ALL_COORDS or span_to not in orthogonal_neighbors(position):
+                    return False, f"span_to {span_to} is not adjacent to {position}"
+                neighbor_stack = self.current_structure[span_to]
+                if len(neighbor_stack) != len(stack):
+                    return False, (
+                        f"span_to {span_to} has {len(neighbor_stack)} blocks, "
+                        f"{position} has {len(stack)} — both must be at same height"
+                    )
+                if len(neighbor_stack) >= 3:
+                    return False, f"Neighbor {span_to} stack is already full"
+                layer_spans = self.current_spans.get(layer, [])
+                if any(position in (a, b) or span_to in (a, b) for a, b in layer_spans):
+                    return False, (
+                        f"{position} or {span_to} already occupied by another span at layer {layer}"
+                    )
+                move["span_to"] = span_to
+
+        elif action == "remove":
+            stack = self.current_structure[position]
+            if not stack:
+                return False, f"Cannot remove from {position} — stack is empty"
+            if layer != len(stack) - 1:
+                return False, (
+                    f"Cannot remove layer {layer} at {position} — "
+                    f"must remove top block first (layer {len(stack) - 1})"
+                )
+            top_block = stack[-1]
+            if top_block.endswith("l"):
+                layer_spans = self.current_spans.get(layer, [])
+                partner = next(
+                    (b if a == position else a for a, b in layer_spans if position in (a, b)),
+                    None,
+                )
+                if partner is None:
+                    return False, (
+                        f"Large block at {position} layer {layer} has no recorded span partner"
+                    )
+                if span_to != partner:
+                    return False, (
+                        f"Incorrect span_to for large block removal at {position} layer {layer}: "
+                        f"got {span_to}, expected {partner}"
+                    )
+                move["span_to"] = span_to
+
+        return True, "ok"
 
     # ------------------------------------------------------------- execution
     def _apply_move(self, move: Dict[str, Any]) -> None:

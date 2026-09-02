@@ -3,9 +3,9 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "craft-debate"
+name = "craft-paper-reproduction"
 version = "0.1.0"
-description = "Generative 3+3+1 partial-observation Debate on the CRAFT benchmark"
+description = "Reproduction of the CRAFT paper protocol"
 readme = "README.md"
 requires-python = ">=3.9"
 dependencies = [
