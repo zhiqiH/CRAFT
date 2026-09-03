@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run the CRAFT paper protocol or its controlled no-oracle ablation."""
+"""Run the CRAFT paper protocol with the paper's fixed five-move Oracle."""
 
 from __future__ import annotations
 
@@ -17,7 +17,11 @@ sys.path.insert(0, str(PROJECT_ROOT / "src"))
 from craft_debate.api import LLMClient, MockLLM, load_api_key  # noqa: E402
 from craft_debate.benchmark import load_structures  # noqa: E402
 from craft_debate.io import experiment_name, write_json  # noqa: E402
-from craft_debate.paper_protocol import PaperGame  # noqa: E402
+from craft_debate.paper_protocol import (  # noqa: E402
+    PAPER_ORACLE_N,
+    PaperGame,
+    validate_paper_oracle_config,
+)
 
 PROVIDERS = {
     "openai": {
@@ -226,7 +230,7 @@ def plot_score_curves(summary: Dict[str, Any], output_png: Path, ymax: float = N
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Run the CRAFT paper protocol or no-oracle ablation"
+        description="Run the CRAFT paper protocol with Oracle fixed at n=5"
     )
     parser.add_argument(
         "--config",
@@ -241,11 +245,6 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--structures", help="Comma-separated structure indices, e.g. 0")
     parser.add_argument("--runs", help="Comma-separated run indices, e.g. 1,2,3")
     parser.add_argument("--turns", type=int, help="Override the number of turns per game")
-    parser.add_argument(
-        "--no-oracle",
-        action="store_true",
-        help="Remove target-derived candidates from the Builder's inputs",
-    )
     parser.add_argument("--mock", action="store_true", help="Deterministic dry run (no LLM calls)")
     parser.add_argument("--name", help="Explicit experiment name")
     return parser.parse_args()
@@ -273,11 +272,11 @@ def main() -> int:
         config["benchmark"]["runs"] = parse_list_arg(args.runs)
     if args.turns:
         config["turns"] = args.turns
-    if args.no_oracle:
-        config.setdefault("oracle", {})["enabled"] = False
-
-    oracle_enabled = bool(config.get("oracle", {}).get("enabled", True))
-    protocol_mode = "oracle_assisted" if oracle_enabled else "no_oracle"
+    try:
+        validate_paper_oracle_config(config)
+    except ValueError as exc:
+        print(f"ERROR: {exc}")
+        return 1
 
     structures = load_structures(PROJECT_ROOT / config["benchmark"]["path"])
     indices = config["benchmark"]["structures"]
@@ -304,13 +303,12 @@ def main() -> int:
     if args.mock:
         display_model += "-mock"
     timestamp = datetime.now()
-    name_model = display_model if oracle_enabled else f"{display_model}-no-oracle"
-    name = args.name or experiment_name(timestamp, name_model)
+    name = args.name or experiment_name(timestamp, display_model)
 
     print(
         f"Experiment: {name} | directors={config['director']['model']} "
         f"builder={config['builder']['model']} | structures={indices} runs={runs} "
-        f"turns={config['turns']} mode={protocol_mode}"
+        f"turns={config['turns']} oracle_n={PAPER_ORACLE_N}"
     )
     print(f"Benchmark: {len(structures)} structures loaded from {config['benchmark']['path']}")
 
@@ -346,14 +344,9 @@ def main() -> int:
             "created_at": timestamp.isoformat(timespec="seconds"),
             "model": display_model,
             "mock": bool(args.mock),
-            "protocol_mode": protocol_mode,
             "protocol": (
                 "CRAFT paper protocol: 1-3 Directors speak sequentially; "
-                + (
-                    "oracle-assisted Builder selects one verified candidate"
-                    if oracle_enabled
-                    else "Builder acts only from the current board and public Director discussion"
-                )
+                f"Builder selects from up to {PAPER_ORACLE_N} Oracle-verified candidates"
             ),
             "paper": "CRAFT: arXiv:2603.25268v2",
             "config": config,

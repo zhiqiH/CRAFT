@@ -1,4 +1,4 @@
-"""CRAFT protocol implementation: 3 Directors -> 1 Builder.
+"""Faithful CRAFT paper protocol: 3 Directors -> 1 oracle-assisted Builder.
 
 Ported from the prompts printed in CRAFT (arXiv:2603.25268v2) Appendix D,
 Figures 9-14, with the turn flow described in Section 5.2:
@@ -7,9 +7,8 @@ Figures 9-14, with the turn flow described in Section 5.2:
 * each turn samples 1-3 unique Directors who speak sequentially
 * Directors see the full current board, their private target view, and the
   conversation history of prior Director responses
-* in the paper condition, the Builder also sees up to 5 oracle-verified moves
-* in the no-oracle ablation, the Builder acts only from the current board and
-  current turn's public Director discussion
+* the Builder sees the current turn's Director discussion plus up to 5
+  oracle-verified candidate moves and selects one (or CLARIFY)
 """
 
 from __future__ import annotations
@@ -28,6 +27,29 @@ from .progress import calculate_progress
 from .prompts import ARCHETYPES, BLOCK_ENCODING_REFERENCE, COORDINATE_REFERENCE, SPATIAL_ORIENTATION
 
 DIRECTOR_TYPES = ["assertive", "cautious", "observant", "skeptical", "synthesizer"]
+PAPER_ORACLE_N = 5
+
+
+def validate_paper_oracle_config(config: Dict[str, Any]) -> Dict[str, Any]:
+    """Require the Oracle setting used by the paper protocol.
+
+    Oracle availability and candidate count are experimental constants for the
+    current RL studies, not tunable treatment variables.
+    """
+    oracle_cfg = config.get("oracle", {"enabled": True, "n": PAPER_ORACLE_N})
+    enabled = oracle_cfg.get("enabled", True) is True
+    candidate_count = oracle_cfg.get("n", PAPER_ORACLE_N)
+    valid_count = (
+        isinstance(candidate_count, int)
+        and not isinstance(candidate_count, bool)
+        and candidate_count == PAPER_ORACLE_N
+    )
+    if not enabled or not valid_count:
+        raise ValueError(
+            f"paper protocol requires oracle.enabled=true and oracle.n={PAPER_ORACLE_N}; "
+            "Oracle is fixed while studying RL communication and turn control"
+        )
+    return oracle_cfg
 
 
 def deterministic_archetype(structure_index: int, run_index: int, director_id: str) -> str:
@@ -275,16 +297,6 @@ BUILDER_SYSTEM = (
     "whether others agreed or conflicted, and why you chose this candidate."
 )
 
-BUILDER_SYSTEM_NO_ORACLE = (
-    "You are a Builder in a collaborative LEGO task. "
-    "You do not know the target structure and receive no target-derived candidate actions. "
-    "Choose exactly one PLACE, REMOVE, or CLARIFY response using only the current board "
-    "and the Directors' public messages. "
-    "In your CONFIRM field, write 2-3 sentences: which director(s) you followed, "
-    "whether others agreed or conflicted, and why their messages support your action."
-)
-
-
 def format_oracle_moves(oracle_moves: List[Dict[str, Any]]) -> str:
     if not oracle_moves:
         return "(no verified moves available this turn — CLARIFY)"
@@ -325,31 +337,6 @@ def build_builder_prompt(
     )
 
 
-def build_no_oracle_builder_prompt(
-    *,
-    board_state: Dict[str, List[str]],
-    available_blocks: List[str],
-    director_discussion: str,
-) -> str:
-    """Builder prompt for the controlled no-oracle ablation.
-
-    The input surface is intentionally the same as the paper Builder prompt except
-    that no target-derived candidate list or correctness signal is present.
-    """
-    decision_context = """ACTION SOURCE:
-Infer exactly one next action from the CURRENT BOARD STATE and DIRECTOR DISCUSSION.
-The Directors' public messages are your only evidence about the intended target.
-Do not invent target contents for positions that the Directors have not described.
-If color, size, position, layer, or span cannot be determined, ask one specific
-clarification question instead of guessing."""
-    return _build_builder_prompt(
-        board_state=board_state,
-        available_blocks=available_blocks,
-        director_discussion=director_discussion,
-        decision_context=decision_context,
-    )
-
-
 def _build_builder_prompt(
     *,
     board_state: Dict[str, List[str]],
@@ -357,7 +344,7 @@ def _build_builder_prompt(
     director_discussion: str,
     decision_context: str,
 ) -> str:
-    """Render the shared Builder rules around a condition-specific decision source."""
+    """Render the paper's Oracle-assisted Builder rules."""
     empty_board = {coord: [] for coord in ALL_COORDS}
     span_example = {
         "(0,0)": [],
@@ -558,8 +545,7 @@ class PaperGame:
         self.target_views = get_director_views(target, spans)
         self.available_blocks = list(AVAILABLE_BLOCKS)
         self.max_turns = int(config["turns"])
-        self.oracle_cfg = config.get("oracle", {"enabled": True, "n": 5})
-        self.oracle_enabled = bool(self.oracle_cfg.get("enabled", True))
+        validate_paper_oracle_config(config)
         self.stop_on_complete = bool(config.get("stop_on_complete", False))
 
         seed = int(config.get("seed", 42))
@@ -584,7 +570,6 @@ class PaperGame:
             "turn_number": turn_number,
             "structure_before": {k: list(v) for k, v in self.env.current_structure.items()},
             "director_responses": {},
-            "oracle_exposed_to_builder": self.oracle_enabled,
         }
 
         speakers = self._sample_speakers()
@@ -625,36 +610,23 @@ class PaperGame:
         )
         record["director_discussion"] = discussion
 
-        oracle_moves: Optional[List[Dict[str, Any]]] = None
-        if self.oracle_enabled:
-            oracle_rng = random.Random(self.structure_index * 1000 + turn_number)
-            oracle_moves = sample_oracle_moves(
-                self.env, int(self.oracle_cfg.get("n", 5)), oracle_rng
-            )
-            record["oracle_moves"] = [
-                {k: v for k, v in move.items()} for move in oracle_moves
-            ]
+        oracle_rng = random.Random(self.structure_index * 1000 + turn_number)
+        oracle_moves = sample_oracle_moves(self.env, PAPER_ORACLE_N, oracle_rng)
+        record["oracle_moves"] = [
+            {k: v for k, v in move.items()} for move in oracle_moves
+        ]
 
-        if self.oracle_enabled:
-            builder_system = BUILDER_SYSTEM
-            builder_prompt = build_builder_prompt(
-                board_state=self.env.current_structure,
-                available_blocks=self.available_blocks,
-                director_discussion=discussion,
-                oracle_moves=oracle_moves or [],
-            )
-            builder_meta = {"kind": "judge", "oracle_moves": oracle_moves}
-        else:
-            builder_system = BUILDER_SYSTEM_NO_ORACLE
-            builder_prompt = build_no_oracle_builder_prompt(
-                board_state=self.env.current_structure,
-                available_blocks=self.available_blocks,
-                director_discussion=discussion,
-            )
-            builder_meta = {"kind": "builder_autonomous"}
+        builder_prompt = build_builder_prompt(
+            board_state=self.env.current_structure,
+            available_blocks=self.available_blocks,
+            director_discussion=discussion,
+            oracle_moves=oracle_moves,
+        )
 
         response = await self.builder_client.complete(
-            builder_system, builder_prompt, builder_meta
+            BUILDER_SYSTEM,
+            builder_prompt,
+            {"kind": "judge", "oracle_moves": oracle_moves},
         )
         parsed_move = self._parse_builder_output(response["content"])
         record["builder_prompt"] = builder_prompt
