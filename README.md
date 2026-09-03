@@ -67,6 +67,32 @@ python3 scripts/run_paper.py --mock --structures 0 --runs 1 --turns 2
 The runner writes a full trajectory to `trajectories/`, a compact summary to
 `results/`, and a score plot alongside the summary.
 
+## Run the controlled no-oracle ablation
+
+The no-oracle condition keeps the benchmark, Director/Builder models,
+temperatures, turn budget, speaker sampling, board state, and current-turn
+Director discussion identical to the paper condition. Its only intervention is
+to remove target-derived candidate moves from the Builder's system and user
+prompts. The Builder must generate its next action from the current board and
+the Directors' public messages.
+
+Run the checked-in matched configuration:
+
+```bash
+python3 scripts/run_paper.py --config config/no_oracle_config.json
+```
+
+Or override any existing config at the command line:
+
+```bash
+python3 scripts/run_paper.py --no-oracle --name no-oracle-ablation
+```
+
+No-oracle turns record `oracle_exposed_to_builder: false`, contain no
+`oracle_moves`, and send no Oracle metadata to the Builder. The physics engine
+still validates the Builder's autonomous action, but it does not suggest or
+repair actions.
+
 ## Generate benchmarks
 
 The default generator behavior is unchanged:

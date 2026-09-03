@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run the paper's CRAFT protocol: 3 Directors -> 1 oracle-assisted Builder."""
+"""Run the CRAFT paper protocol or its controlled no-oracle ablation."""
 
 from __future__ import annotations
 
@@ -225,7 +225,9 @@ def plot_score_curves(summary: Dict[str, Any], output_png: Path, ymax: float = N
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Run the paper's CRAFT protocol")
+    parser = argparse.ArgumentParser(
+        description="Run the CRAFT paper protocol or no-oracle ablation"
+    )
     parser.add_argument(
         "--config",
         default=str(PROJECT_ROOT / "config" / "paper_config.json"),
@@ -239,6 +241,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--structures", help="Comma-separated structure indices, e.g. 0")
     parser.add_argument("--runs", help="Comma-separated run indices, e.g. 1,2,3")
     parser.add_argument("--turns", type=int, help="Override the number of turns per game")
+    parser.add_argument(
+        "--no-oracle",
+        action="store_true",
+        help="Remove target-derived candidates from the Builder's inputs",
+    )
     parser.add_argument("--mock", action="store_true", help="Deterministic dry run (no LLM calls)")
     parser.add_argument("--name", help="Explicit experiment name")
     return parser.parse_args()
@@ -266,6 +273,11 @@ def main() -> int:
         config["benchmark"]["runs"] = parse_list_arg(args.runs)
     if args.turns:
         config["turns"] = args.turns
+    if args.no_oracle:
+        config.setdefault("oracle", {})["enabled"] = False
+
+    oracle_enabled = bool(config.get("oracle", {}).get("enabled", True))
+    protocol_mode = "oracle_assisted" if oracle_enabled else "no_oracle"
 
     structures = load_structures(PROJECT_ROOT / config["benchmark"]["path"])
     indices = config["benchmark"]["structures"]
@@ -292,12 +304,13 @@ def main() -> int:
     if args.mock:
         display_model += "-mock"
     timestamp = datetime.now()
-    name = args.name or experiment_name(timestamp, display_model)
+    name_model = display_model if oracle_enabled else f"{display_model}-no-oracle"
+    name = args.name or experiment_name(timestamp, name_model)
 
     print(
         f"Experiment: {name} | directors={config['director']['model']} "
         f"builder={config['builder']['model']} | structures={indices} runs={runs} "
-        f"turns={config['turns']}"
+        f"turns={config['turns']} mode={protocol_mode}"
     )
     print(f"Benchmark: {len(structures)} structures loaded from {config['benchmark']['path']}")
 
@@ -333,9 +346,14 @@ def main() -> int:
             "created_at": timestamp.isoformat(timespec="seconds"),
             "model": display_model,
             "mock": bool(args.mock),
+            "protocol_mode": protocol_mode,
             "protocol": (
-                "CRAFT paper protocol: 1-3 Directors speak sequentially, "
-                "oracle-assisted Builder selects one verified candidate"
+                "CRAFT paper protocol: 1-3 Directors speak sequentially; "
+                + (
+                    "oracle-assisted Builder selects one verified candidate"
+                    if oracle_enabled
+                    else "Builder acts only from the current board and public Director discussion"
+                )
             ),
             "paper": "CRAFT: arXiv:2603.25268v2",
             "config": config,

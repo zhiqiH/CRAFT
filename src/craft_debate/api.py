@@ -156,6 +156,11 @@ class MockLLM:
                 if move.get("span_to"):
                     line += f":{move['span_to']}"
                 content = f"<move>{line}:CONFIRM:mock paper-protocol move</move>"
+        elif kind == "builder_autonomous":
+            content = (
+                "<move>CLARIFY:Please specify one block's color, size, and "
+                "location (mock no-oracle Builder)</move>"
+            )
         else:
             content = "mock"
         return {
