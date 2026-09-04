@@ -20,19 +20,45 @@ Oracle is no longer an experimental variable. The active code requires
 variables are first **communication inside a construction turn** and then
 **episode length across construction turns**.
 
+## Complete experiment matrix
+
+All methods keep the benchmark, models, temperatures, physical rules, completion
+metric, and Oracle n=5 unchanged. Adaptive horizons always use 20 turns as a
+hard upper bound.
+
+| Method | Director scheduling | Turn horizon | Status |
+| --- | --- | --- | --- |
+| Original | Random 1-3 | Fixed 20 | Implemented |
+| Fixed-1 | Exactly 1 | Fixed 20 | Implemented |
+| Fixed-2 | Exactly 2 | Fixed 20 | Implemented |
+| Fixed-3 | Exactly 3 | Fixed 20 | Implemented |
+| Heuristic-Comm | Adaptive heuristic | Fixed 20 | Planned |
+| Heuristic-Stop | Random 1-3 | Adaptive heuristic, max 20 | Planned |
+| RL-Comm | Learned Director policy | Fixed 20 | Planned |
+| RL-Turn | Random 1-3 | Learned stop policy, max 20 | Planned |
+| Joint RL | Learned Director policy | Learned stop policy, max 20 | Later extension |
+
+The implementation order is: establish the four fixed-horizon baselines, study
+Director adaptation while holding the horizon fixed, study stopping while
+holding the Original Director scheduler fixed, and only then train both
+controllers jointly. This isolates the effect of each intervention.
+
 ## Research roadmap
 
-### Stage 0 — fixed paper baseline
+### Stage 0 — fixed-horizon baselines
 
-The current implementation reproduces the fixed environment used by both RL
-stages:
+The current implementation provides the four baseline conditions used by the
+later adaptive experiments:
 
 - three Directors with partial private views;
-- 1-3 unique Directors sampled at random and queried sequentially per turn;
+- Original samples 1-3 unique Directors and queries them sequentially;
+- Fixed-1/2/3 query exactly 1/2/3 Directors per turn;
 - an Oracle-assisted Builder with up to five verified candidate moves;
 - a fixed 20-turn horizon and the paper's board, stacking, and progress rules.
 
-This baseline remains unchanged while evaluating learned controllers.
+Fixed-1 cycles through D1/D2/D3. Fixed-2 cycles through all six ordered pairs,
+and Fixed-3 cycles through all six speaking permutations. Across runs 1, 2, and
+3 at 20 turns, Director identities and speaking orders are exactly balanced.
 
 ### Stage 1 — inner RL for Director communication
 
@@ -65,24 +91,12 @@ r_inner = progress_delta
           - lambda_invalid * invalid_builder_action
 ```
 
-Evaluate the following communication conditions under the same fixed 20-turn
-horizon:
-
-| Method | Director scheduling | Turn horizon |
-| --- | --- | --- |
-| Original | Random 1-3 | Fixed 20 |
-| Fixed-1 | Exactly 1 | Fixed 20 |
-| Fixed-2 | Exactly 2 | Fixed 20 |
-| Fixed-3 | Exactly 3 | Fixed 20 |
-| Heuristic-Comm | Adaptive heuristic | Fixed 20 |
-| RL-Comm | Learned inner policy | Fixed 20 |
-
-For Fixed-1 and Fixed-2, balance Director identities and speaking orders so the
-comparison measures communication budget rather than a favored viewpoint.
+Compare Heuristic-Comm and RL-Comm against all four Stage-0 baselines under the
+same fixed 20-turn horizon.
 
 ### Stage 2 — outer RL for episode length
 
-Only after selecting and freezing the Stage-1 communication policy, learn when to
+Only after the Stage-1 communication experiments are established, learn when to
 end the episode. After each Builder execution, the outer policy chooses:
 
 ```text
@@ -98,13 +112,14 @@ per-turn cost:
 R_outer = final_progress - lambda_turn * turns_used
 ```
 
-Compare Fixed-20, heuristic stopping, and RL stopping with exactly the same frozen
-inner scheduler. A random-scheduler replication can be reported separately for
-comparison with the original paper protocol. This prevents changes in
-communication and stopping from being credited to the wrong controller.
+For the isolated Heuristic-Stop and RL-Turn rows, retain the Original random 1-3
+Director scheduler. Compare both methods with Original so any improvement is
+attributable to the stopping controller rather than a communication change.
 
-Jointly training both policies is a later extension, after the isolated inner and
-outer studies are understood.
+### Stage 3 — joint RL
+
+Jointly train Director scheduling and stopping only after the isolated inner and
+outer studies are understood. The horizon remains capped at 20.
 
 ## Experimental controls and reporting
 
@@ -125,9 +140,9 @@ archival evidence, not part of the active treatment matrix.
 
 ## Current status
 
-The fixed Oracle n=5 paper baseline is implemented. Stage-1 inner RL and Stage-2
-outer RL are the next implementation milestones; neither controller is presented
-as complete in the current code.
+Original and the balanced Fixed-1/2/3 baselines are implemented. Heuristic-Comm,
+RL-Comm, Heuristic-Stop, RL-Turn, and Joint RL remain planned and are not
+presented as completed experiments.
 
 ## Repository map
 
@@ -137,6 +152,7 @@ benchmark/craft-80.json              additional generated structures
 benchmark/generate_benchmark.py      structure generator
 config/paper_config.json             fixed Oracle n=5 configuration
 scripts/run_paper.py                 paper-baseline runner
+scripts/run_baselines.py             matched four-baseline runner and comparison
 scripts/check_setup.py               local setup check
 src/craft_debate/paper_protocol.py   Director/Builder prompts and turn flow
 src/craft_debate/oracle.py           verified move enumeration
@@ -148,29 +164,83 @@ archive/oracle_sweep_20260902/       frozen Oracle-count experiments
 The source package retains its historical Python import name so the benchmark
 generator remains unchanged.
 
-## Setup and baseline run
+## Remote setup
 
 ```bash
 python3 -m pip install -e .
 python3 scripts/check_setup.py
-python3 scripts/run_paper.py
 ```
 
 API keys can be supplied through environment variables or files under
 `.secret/`. The default configuration uses a local Ollama Director and an OpenAI
-Builder.
+Builder. On the remote machine, make sure Ollama is running and the configured
+Director model is installed before starting an experiment.
 
-Useful baseline overrides:
+Run a no-cost pipeline check first; mock output is for validation only and must
+not be reported as an experimental result:
 
 ```bash
-python3 scripts/run_paper.py --structures 0,1,2 --runs 1,2,3
-python3 scripts/run_paper.py --turns 20 --name paper-baseline
-python3 scripts/run_paper.py --mock --structures 0 --runs 1 --turns 2
+python3 scripts/run_baselines.py \
+  --mock \
+  --structures 0 \
+  --runs 1 \
+  --turns 2 \
+  --quiet \
+  --name-prefix baseline-smoke
 ```
 
-The runner writes a full trajectory to `trajectories/`, a compact summary to
-`results/`, and a score plot alongside the summary. Any config that disables the
-Oracle or changes its candidate count is rejected before an experiment starts.
+## Run the four baselines remotely
+
+The following command runs all four matched conditions. If `--structures` or
+`--runs` is omitted, the values in `config/paper_config.json` are used.
+
+```bash
+python3 scripts/run_baselines.py \
+  --config config/paper_config.json \
+  --turns 20 \
+  --quiet \
+  --name-prefix director-baselines
+```
+
+To override the configured evaluation subset, pass the exact same structure and
+run lists to the suite once; it forwards them unchanged to all four methods:
+
+```bash
+python3 scripts/run_baselines.py \
+  --structures 0,1,2 \
+  --runs 1,2,3 \
+  --turns 20 \
+  --quiet \
+  --name-prefix director-baselines-s012-r123
+```
+
+To run or resume one condition separately:
+
+```bash
+python3 scripts/run_paper.py --director-schedule original --turns 20 --name baseline-original
+python3 scripts/run_paper.py --director-schedule fixed-1 --turns 20 --name baseline-fixed-1
+python3 scripts/run_paper.py --director-schedule fixed-2 --turns 20 --name baseline-fixed-2
+python3 scripts/run_paper.py --director-schedule fixed-3 --turns 20 --name baseline-fixed-3
+```
+
+Use the same `--structures` and `--runs` values for every separate condition.
+The suite is preferred because it enforces that match automatically.
+
+## Baseline outputs
+
+Each condition writes a full trajectory to `trajectories/`, a compact summary
+to `results/`, and a score curve beside the summary. The four-condition runner
+also writes `*-comparison.json` and `*-comparison.png` with:
+
+- mean final progress and SEM;
+- completion rate;
+- Director calls per turn and total Director/Builder tokens;
+- invalid-action rate;
+- paths to every condition's summary and trajectory.
+
+Any configuration that disables the Oracle, changes its candidate count from 5,
+or names an unsupported Director schedule is rejected before the experiment
+starts.
 
 ## Generate benchmarks
 

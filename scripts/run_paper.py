@@ -18,8 +18,10 @@ from craft_debate.api import LLMClient, MockLLM, load_api_key  # noqa: E402
 from craft_debate.benchmark import load_structures  # noqa: E402
 from craft_debate.io import experiment_name, write_json  # noqa: E402
 from craft_debate.paper_protocol import (  # noqa: E402
+    DIRECTOR_SCHEDULES,
     PAPER_ORACLE_N,
     PaperGame,
+    validate_director_schedule,
     validate_paper_oracle_config,
 )
 
@@ -84,6 +86,20 @@ def build_summary(experiment: Dict[str, Any]) -> Dict[str, Any]:
         series = [turn["score"]["overall_progress"] for turn in game["turns"]]
         while len(series) < max_turns:
             series.append(series[-1] if series else game.get("baseline_progress", 0.0))
+        turns = game["turns"]
+        director_calls = sum(len(turn.get("director_order", [])) for turn in turns)
+        director_tokens = sum(
+            int(response.get("usage", {}).get("total_tokens") or 0)
+            for turn in turns
+            for response in turn.get("director_responses", {}).values()
+        )
+        builder_tokens = sum(
+            int(turn.get("builder_response", {}).get("usage", {}).get("total_tokens") or 0)
+            for turn in turns
+        )
+        invalid_actions = sum(
+            1 for turn in turns if turn.get("execution", {}).get("ok") is False
+        )
         per_game.append(
             {
                 "structure_id": game["structure_id"],
@@ -92,6 +108,22 @@ def build_summary(experiment: Dict[str, Any]) -> Dict[str, Any]:
                 "complexity": game["complexity"],
                 "archetypes": game["archetypes"],
                 "turns_completed": len(game["turns"]),
+                "director_schedule": game.get(
+                    "director_schedule",
+                    experiment.get("experiment", {})
+                    .get("config", {})
+                    .get("director_schedule", "original"),
+                ),
+                "director_calls": director_calls,
+                "director_calls_per_turn": round(director_calls / len(turns), 6)
+                if turns
+                else 0.0,
+                "director_tokens": director_tokens,
+                "builder_tokens": builder_tokens,
+                "invalid_actions": invalid_actions,
+                "invalid_action_rate": round(invalid_actions / len(turns), 6)
+                if turns
+                else 0.0,
                 "baseline_progress": game.get("baseline_progress", 0.0),
                 "final_progress": game["final_progress"],
                 "completed": game["completed"],
@@ -119,6 +151,11 @@ def build_summary(experiment: Dict[str, Any]) -> Dict[str, Any]:
         )
 
     final_scores = [g["final_progress"] for g in per_game]
+    total_turns = sum(g["turns_completed"] for g in per_game)
+    total_director_calls = sum(g["director_calls"] for g in per_game)
+    total_director_tokens = sum(g["director_tokens"] for g in per_game)
+    total_builder_tokens = sum(g["builder_tokens"] for g in per_game)
+    total_invalid_actions = sum(g["invalid_actions"] for g in per_game)
     return {
         "experiment": experiment.get("experiment", {}),
         "max_turns": max_turns,
@@ -127,8 +164,25 @@ def build_summary(experiment: Dict[str, Any]) -> Dict[str, Any]:
         "aggregate": {
             "n_games": len(per_game),
             "n_completed": sum(1 for g in per_game if g["completed"]),
+            "completion_rate": round(
+                sum(1 for g in per_game if g["completed"]) / len(per_game), 6
+            )
+            if per_game
+            else 0.0,
             "mean_final_progress": round(sum(final_scores) / len(final_scores), 6)
             if final_scores
+            else 0.0,
+            "total_turns": total_turns,
+            "total_director_calls": total_director_calls,
+            "mean_director_calls_per_turn": round(
+                total_director_calls / total_turns, 6
+            )
+            if total_turns
+            else 0.0,
+            "total_director_tokens": total_director_tokens,
+            "total_builder_tokens": total_builder_tokens,
+            "invalid_action_rate": round(total_invalid_actions / total_turns, 6)
+            if total_turns
             else 0.0,
             "final_overall_progress_by_turn": mean_curve[-1] if mean_curve else None,
         },
@@ -245,7 +299,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--structures", help="Comma-separated structure indices, e.g. 0")
     parser.add_argument("--runs", help="Comma-separated run indices, e.g. 1,2,3")
     parser.add_argument("--turns", type=int, help="Override the number of turns per game")
+    parser.add_argument(
+        "--director-schedule",
+        choices=DIRECTOR_SCHEDULES,
+        help="Director baseline: original random 1-3, or exactly 1/2/3",
+    )
     parser.add_argument("--mock", action="store_true", help="Deterministic dry run (no LLM calls)")
+    parser.add_argument("--quiet", action="store_true", help="Hide per-turn model output")
     parser.add_argument("--name", help="Explicit experiment name")
     return parser.parse_args()
 
@@ -272,8 +332,11 @@ def main() -> int:
         config["benchmark"]["runs"] = parse_list_arg(args.runs)
     if args.turns:
         config["turns"] = args.turns
+    if args.director_schedule:
+        config["director_schedule"] = args.director_schedule
     try:
         validate_paper_oracle_config(config)
+        validate_director_schedule(config)
     except ValueError as exc:
         print(f"ERROR: {exc}")
         return 1
@@ -308,7 +371,8 @@ def main() -> int:
     print(
         f"Experiment: {name} | directors={config['director']['model']} "
         f"builder={config['builder']['model']} | structures={indices} runs={runs} "
-        f"turns={config['turns']} oracle_n={PAPER_ORACLE_N}"
+        f"turns={config['turns']} schedule={config.get('director_schedule', 'original')} "
+        f"oracle_n={PAPER_ORACLE_N}"
     )
     print(f"Benchmark: {len(structures)} structures loaded from {config['benchmark']['path']}")
 
@@ -328,6 +392,7 @@ def main() -> int:
                     run_index=run_index,
                     director_client=director_client,
                     builder_client=builder_client,
+                    verbose=not args.quiet,
                 )
                 record = await game.run()
                 games.append(record)
@@ -345,7 +410,8 @@ def main() -> int:
             "model": display_model,
             "mock": bool(args.mock),
             "protocol": (
-                "CRAFT paper protocol: 1-3 Directors speak sequentially; "
+                "CRAFT baseline protocol: Director schedule="
+                f"{config.get('director_schedule', 'original')}; "
                 f"Builder selects from up to {PAPER_ORACLE_N} Oracle-verified candidates"
             ),
             "paper": "CRAFT: arXiv:2603.25268v2",

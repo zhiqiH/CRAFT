@@ -28,6 +28,26 @@ from .prompts import ARCHETYPES, BLOCK_ENCODING_REFERENCE, COORDINATE_REFERENCE,
 
 DIRECTOR_TYPES = ["assertive", "cautious", "observant", "skeptical", "synthesizer"]
 PAPER_ORACLE_N = 5
+DIRECTOR_SCHEDULES = ("original", "fixed-1", "fixed-2", "fixed-3")
+DIRECTOR_ORDERS = {
+    "fixed-1": [("D1",), ("D2",), ("D3",)],
+    "fixed-2": [
+        ("D1", "D2"),
+        ("D2", "D1"),
+        ("D1", "D3"),
+        ("D3", "D1"),
+        ("D2", "D3"),
+        ("D3", "D2"),
+    ],
+    "fixed-3": [
+        ("D1", "D2", "D3"),
+        ("D1", "D3", "D2"),
+        ("D2", "D1", "D3"),
+        ("D2", "D3", "D1"),
+        ("D3", "D1", "D2"),
+        ("D3", "D2", "D1"),
+    ],
+}
 
 
 def validate_paper_oracle_config(config: Dict[str, Any]) -> Dict[str, Any]:
@@ -50,6 +70,15 @@ def validate_paper_oracle_config(config: Dict[str, Any]) -> Dict[str, Any]:
             "Oracle is fixed while studying RL communication and turn control"
         )
     return oracle_cfg
+
+
+def validate_director_schedule(config: Dict[str, Any]) -> str:
+    """Return the configured baseline schedule after validating its name."""
+    schedule = config.get("director_schedule", "original")
+    if schedule not in DIRECTOR_SCHEDULES:
+        choices = ", ".join(DIRECTOR_SCHEDULES)
+        raise ValueError(f"director_schedule must be one of: {choices}")
+    return schedule
 
 
 def deterministic_archetype(structure_index: int, run_index: int, director_id: str) -> str:
@@ -546,9 +575,11 @@ class PaperGame:
         self.available_blocks = list(AVAILABLE_BLOCKS)
         self.max_turns = int(config["turns"])
         validate_paper_oracle_config(config)
+        self.director_schedule = validate_director_schedule(config)
         self.stop_on_complete = bool(config.get("stop_on_complete", False))
 
         seed = int(config.get("seed", 42))
+        self.seed = seed
         self.select_rng = random.Random(seed * 1000 + structure_index * 100 + run_index)
         self.archetypes = {
             did: deterministic_archetype(structure_index, run_index, did)
@@ -565,6 +596,26 @@ class PaperGame:
         k = self.select_rng.randint(1, 3)
         return self.select_rng.sample(["D1", "D2", "D3"], k)
 
+    def _select_speakers(self, turn_number: int) -> List[str]:
+        """Select speakers while keeping fixed baselines identity/order balanced.
+
+        Fixed-1 cycles through the three identities. Fixed-2 and Fixed-3 cycle
+        through all six ordered permutations. With runs 1, 2, and 3 at a
+        20-turn horizon, the phase offsets make every identity/order occur the
+        same number of times across repetitions.
+        """
+        if self.director_schedule == "original":
+            return self._sample_speakers()
+
+        orders = DIRECTOR_ORDERS[self.director_schedule]
+        run_stride = 1 if self.director_schedule == "fixed-1" else 2
+        phase = (
+            self.seed
+            + self.structure_index
+            + (self.run_index - 1) * run_stride
+        ) % len(orders)
+        return list(orders[(phase + turn_number - 1) % len(orders)])
+
     async def run_turn(self, turn_number: int) -> Dict[str, Any]:
         record: Dict[str, Any] = {
             "turn_number": turn_number,
@@ -572,7 +623,8 @@ class PaperGame:
             "director_responses": {},
         }
 
-        speakers = self._sample_speakers()
+        speakers = self._select_speakers(turn_number)
+        record["director_schedule"] = self.director_schedule
         record["director_order"] = speakers
         for did in speakers:
             conversation_text = "\n".join(self.conversation)
@@ -731,6 +783,7 @@ class PaperGame:
             "complexity": self.structure_data["complexity"],
             "metadata": self.structure_data.get("metadata", {}),
             "run_index": self.run_index,
+            "director_schedule": self.director_schedule,
             "archetypes": self.archetypes,
             "target_structure": {k: list(v) for k, v in self.structure_data["structure"].items()},
             "target_spans": {str(k): list(v) for k, v in self.structure_data["spans"].items()},
