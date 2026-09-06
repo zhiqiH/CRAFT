@@ -1,0 +1,1289 @@
+{
+  "source": "Four local director-baselines trajectories, 20 structures x 3 matched run indices x 20 turns",
+  "methods": {
+    "original": {
+      "counts": {
+        "turns": 1200,
+        "oracle_available": 882,
+        "exact_oracle_match": 808,
+        "loose_logged_match": 857,
+        "first_candidate": 512,
+        "invalid": 63,
+        "clarify": 318,
+        "positive": 786,
+        "negative": 31,
+        "zero": 383,
+        "off_oracle_valid": 11,
+        "nonempty_off_oracle": 74,
+        "director_tokens": 6398263,
+        "builder_tokens": 3301273,
+        "director_seconds": 9267.752000000008,
+        "builder_seconds": 1537.8419999999983,
+        "post_complete_turns": 43,
+        "invalid_before_first_complete": 63,
+        "turns_before_first_complete": 1157,
+        "director_calls": 2421,
+        "missing_message": 1,
+        "hit_output_limit": 1,
+        "ever_completed": 12,
+        "completed_final": 12,
+        "best_progress": 41.23342617082892
+      },
+      "candidate_count_distribution": {
+        "5": 301,
+        "4": 169,
+        "3": 163,
+        "2": 148,
+        "1": 101,
+        "0": 318
+      },
+      "candidate_empty_percent": 26.5,
+      "candidate_singleton_percent_when_nonempty": 11.451,
+      "exact_oracle_match_percent_when_nonempty": 91.61,
+      "first_candidate_percent_of_exact_matches": 63.366,
+      "missing_message_percent": 0.041,
+      "final_progress": 0.6861837298010066,
+      "mean_best_progress": 0.6872237695138154,
+      "completion_rate": 0.2,
+      "errors": {
+        "Cannot remove layer 0": 12,
+        "Incorrect span_to for large block removal": 5,
+        "Large block 'ol' needs span_to": 6,
+        "Wrong layer": 3,
+        "Large block 'yl' needs span_to": 5,
+        "Large block 'bl' needs span_to": 30,
+        "span_to (1,2) is not adjacent to (1,0)": 1,
+        "Cannot remove from (1,0) — stack is empty": 1
+      },
+      "complexities": {
+        "medium": 24,
+        "complex": 15,
+        "simple": 21
+      },
+      "mean_curve": [
+        0.07227809826131718,
+        0.11574138528505423,
+        0.1526086332798766,
+        0.19778276325053595,
+        0.23886835602033923,
+        0.283453469348969,
+        0.32655625999561927,
+        0.370515938965405,
+        0.41506203567034994,
+        0.45582635625808776,
+        0.5005182417873112,
+        0.5480608914138663,
+        0.5854752566344862,
+        0.615673306197715,
+        0.6412381813668999,
+        0.6660362982922098,
+        0.6792816203699117,
+        0.682925592876203,
+        0.6834036341585922,
+        0.6861837298010066
+      ],
+      "mean_final_components": {
+        "iou_score": 0.7189300243362028,
+        "completion_percentage": 0.717398942844595,
+        "position_accuracy": 0.6222222222222222
+      }
+    },
+    "fixed-1": {
+      "counts": {
+        "turns": 1200,
+        "oracle_available": 885,
+        "exact_oracle_match": 826,
+        "loose_logged_match": 871,
+        "first_candidate": 452,
+        "invalid": 44,
+        "clarify": 313,
+        "positive": 800,
+        "negative": 37,
+        "zero": 363,
+        "off_oracle_valid": 17,
+        "nonempty_off_oracle": 59,
+        "director_tokens": 2640767,
+        "builder_tokens": 3247244,
+        "director_seconds": 5479.200999999994,
+        "builder_seconds": 1294.2819999999988,
+        "post_complete_turns": 60,
+        "invalid_before_first_complete": 43,
+        "turns_before_first_complete": 1140,
+        "director_calls": 1200,
+        "missing_message": 0,
+        "hit_output_limit": 0,
+        "ever_completed": 13,
+        "completed_final": 13,
+        "best_progress": 42.92487009134606
+      },
+      "candidate_count_distribution": {
+        "5": 334,
+        "4": 144,
+        "3": 158,
+        "2": 157,
+        "1": 92,
+        "0": 315
+      },
+      "candidate_empty_percent": 26.25,
+      "candidate_singleton_percent_when_nonempty": 10.395,
+      "exact_oracle_match_percent_when_nonempty": 93.333,
+      "first_candidate_percent_of_exact_matches": 54.722,
+      "missing_message_percent": 0.0,
+      "final_progress": 0.7114164185533369,
+      "mean_best_progress": 0.7154145015224344,
+      "completion_rate": 0.21666666666666667,
+      "errors": {
+        "Cannot remove layer 0": 15,
+        "Large block 'ol' needs span_to": 10,
+        "Large block 'yl' needs span_to": 15,
+        "Wrong layer": 1,
+        "Large block 'rl' needs span_to": 1,
+        "Large block 'bl' needs span_to": 2
+      },
+      "complexities": {
+        "medium": 24,
+        "complex": 15,
+        "simple": 21
+      },
+      "mean_curve": [
+        0.07382060406469254,
+        0.120982073743134,
+        0.16388126754450172,
+        0.20776096550848647,
+        0.24581901815730953,
+        0.2905474174383404,
+        0.3334730184779765,
+        0.38757349061792234,
+        0.43105760155035516,
+        0.474790654263385,
+        0.5209467447898035,
+        0.5700849390530931,
+        0.6099658347486341,
+        0.6456677232350383,
+        0.6757395348457514,
+        0.6895325197234046,
+        0.7071081147642932,
+        0.7090732647935165,
+        0.7097859752403993,
+        0.7114164185533369
+      ],
+      "mean_final_components": {
+        "iou_score": 0.7452959545327966,
+        "completion_percentage": 0.7426570048309179,
+        "position_accuracy": 0.6462962962962963
+      }
+    },
+    "fixed-2": {
+      "counts": {
+        "turns": 1200,
+        "oracle_available": 889,
+        "exact_oracle_match": 795,
+        "loose_logged_match": 855,
+        "first_candidate": 486,
+        "invalid": 81,
+        "clarify": 311,
+        "positive": 782,
+        "negative": 23,
+        "zero": 395,
+        "off_oracle_valid": 13,
+        "nonempty_off_oracle": 94,
+        "director_tokens": 6388103,
+        "builder_tokens": 3310477,
+        "director_seconds": 8181.16,
+        "builder_seconds": 1409.4160000000004,
+        "post_complete_turns": 48,
+        "invalid_before_first_complete": 81,
+        "turns_before_first_complete": 1152,
+        "director_calls": 2400,
+        "missing_message": 0,
+        "hit_output_limit": 1,
+        "ever_completed": 13,
+        "completed_final": 13,
+        "best_progress": 42.13644426723374
+      },
+      "candidate_count_distribution": {
+        "5": 338,
+        "4": 148,
+        "3": 166,
+        "2": 139,
+        "1": 98,
+        "0": 311
+      },
+      "candidate_empty_percent": 25.917,
+      "candidate_singleton_percent_when_nonempty": 11.024,
+      "exact_oracle_match_percent_when_nonempty": 89.426,
+      "first_candidate_percent_of_exact_matches": 61.132,
+      "missing_message_percent": 0.0,
+      "final_progress": 0.7001107820055188,
+      "mean_best_progress": 0.7022740711205624,
+      "completion_rate": 0.21666666666666667,
+      "errors": {
+        "Cannot remove layer 0": 26,
+        "Wrong layer": 5,
+        "Large block 'ol' needs span_to": 10,
+        "Large block 'yl' needs span_to": 12,
+        "span_to (1,2) is not adjacent to (1,0)": 1,
+        "Illegal span into invisible cell": 1,
+        "Large block 'bl' needs span_to": 23,
+        "Large block 'rl' needs span_to": 1,
+        "Incorrect span_to for large block removal": 2
+      },
+      "complexities": {
+        "medium": 24,
+        "complex": 15,
+        "simple": 21
+      },
+      "mean_curve": [
+        0.07286772816978766,
+        0.11568211252402709,
+        0.14945935380832406,
+        0.19348604658330057,
+        0.23580528542847384,
+        0.2750043254270943,
+        0.3285414538212021,
+        0.37098467044862926,
+        0.41075051750661973,
+        0.4510997352295979,
+        0.4906779247746067,
+        0.5462885768072648,
+        0.5901485037619668,
+        0.6220413620055115,
+        0.6489953145563366,
+        0.6694225385598384,
+        0.6912238867370446,
+        0.6942839020953055,
+        0.700596181109339,
+        0.7001107820055188
+      ],
+      "mean_final_components": {
+        "iou_score": 0.7343886230728336,
+        "completion_percentage": 0.7326103896103896,
+        "position_accuracy": 0.6333333333333333
+      }
+    },
+    "fixed-3": {
+      "counts": {
+        "turns": 1200,
+        "oracle_available": 916,
+        "exact_oracle_match": 787,
+        "loose_logged_match": 853,
+        "first_candidate": 482,
+        "invalid": 118,
+        "clarify": 283,
+        "positive": 785,
+        "negative": 11,
+        "zero": 404,
+        "off_oracle_valid": 12,
+        "nonempty_off_oracle": 129,
+        "director_tokens": 11194085,
+        "builder_tokens": 3364401,
+        "director_seconds": 17073.32600000001,
+        "builder_seconds": 1362.2109999999998,
+        "post_complete_turns": 56,
+        "invalid_before_first_complete": 118,
+        "turns_before_first_complete": 1144,
+        "director_calls": 3600,
+        "missing_message": 0,
+        "hit_output_limit": 5,
+        "ever_completed": 15,
+        "completed_final": 15,
+        "best_progress": 43.005494456386906
+      },
+      "candidate_count_distribution": {
+        "5": 331,
+        "4": 183,
+        "3": 165,
+        "2": 137,
+        "1": 100,
+        "0": 284
+      },
+      "candidate_empty_percent": 23.667,
+      "candidate_singleton_percent_when_nonempty": 10.917,
+      "exact_oracle_match_percent_when_nonempty": 85.917,
+      "first_candidate_percent_of_exact_matches": 61.245,
+      "missing_message_percent": 0.0,
+      "final_progress": 0.7167582409397817,
+      "mean_best_progress": 0.7167582409397818,
+      "completion_rate": 0.25,
+      "errors": {
+        "Cannot remove layer 0": 26,
+        "Large block 'ol' needs span_to": 17,
+        "Incorrect span_to for large block removal": 14,
+        "Wrong layer": 15,
+        "span_to (1,2) is not adjacent to (1,0)": 1,
+        "Large block 'yl' needs span_to": 25,
+        "Illegal span into invisible cell": 1,
+        "Large block 'rl' needs span_to": 4,
+        "Large block 'bl' needs span_to": 14,
+        "Cannot remove from (0,2) — stack is empty": 1
+      },
+      "complexities": {
+        "medium": 24,
+        "complex": 15,
+        "simple": 21
+      },
+      "mean_curve": [
+        0.07156188505959672,
+        0.11667724546690984,
+        0.15690155560178443,
+        0.1956294427879096,
+        0.23564182717443588,
+        0.2765067730811438,
+        0.3107507304896702,
+        0.35285533470258873,
+        0.3891911155065236,
+        0.43421710595108765,
+        0.474751036297375,
+        0.5160796822608417,
+        0.5611603372543494,
+        0.6030057781512778,
+        0.6410830073463559,
+        0.6723313841073185,
+        0.6884854800043587,
+        0.7003346997452642,
+        0.7104412757482933,
+        0.7167582409397817
+      ],
+      "mean_final_components": {
+        "iou_score": 0.7506589637796731,
+        "completion_percentage": 0.7459120553359684,
+        "position_accuracy": 0.6537037037037037
+      }
+    }
+  },
+  "paired_structure_bootstrap": [
+    {
+      "contrast": "fixed-3 minus fixed-1",
+      "mean_difference": 0.00534182238644481,
+      "structure_cluster_bootstrap_95_CI": [
+        -0.016777163146942897,
+        0.026731761244165896
+      ],
+      "structure_wins_ties_losses": [
+        8,
+        7,
+        5
+      ]
+    },
+    {
+      "contrast": "fixed-1 minus original",
+      "mean_difference": 0.025232688752330246,
+      "structure_cluster_bootstrap_95_CI": [
+        -0.032306009297966766,
+        0.09199905819206924
+      ],
+      "structure_wins_ties_losses": [
+        6,
+        8,
+        6
+      ]
+    },
+    {
+      "contrast": "fixed-2 minus fixed-1",
+      "mean_difference": -0.011305636547818097,
+      "structure_cluster_bootstrap_95_CI": [
+        -0.04650230685776072,
+        0.0240210365225573
+      ],
+      "structure_wins_ties_losses": [
+        5,
+        10,
+        5
+      ]
+    },
+    {
+      "contrast": "fixed-3 minus original",
+      "mean_difference": 0.030574511138775066,
+      "structure_cluster_bootstrap_95_CI": [
+        -0.027675948038281172,
+        0.10532648770082507
+      ],
+      "structure_wins_ties_losses": [
+        6,
+        9,
+        5
+      ]
+    }
+  ],
+  "structures": [
+    {
+      "structure_index": 0,
+      "complexity": "medium",
+      "minimum_placements_from_empty": 17,
+      "target_cell_layers": 23,
+      "original": 0.7352657004830917,
+      "fixed-1": 0.7352657004830917,
+      "fixed-2": 0.7352657004830917,
+      "fixed-3": 0.7352657004830917
+    },
+    {
+      "structure_index": 1,
+      "complexity": "medium",
+      "minimum_placements_from_empty": 17,
+      "target_cell_layers": 23,
+      "original": 0.7185990338164251,
+      "fixed-1": 0.5882025918257803,
+      "fixed-2": 0.6648646576182808,
+      "fixed-3": 0.5886626792423894
+    },
+    {
+      "structure_index": 2,
+      "complexity": "complex",
+      "minimum_placements_from_empty": 15,
+      "target_cell_layers": 25,
+      "original": 0.2451529790660226,
+      "fixed-1": 0.23466988727858298,
+      "fixed-2": 0.23466988727858298,
+      "fixed-3": 0.2451529790660226
+    },
+    {
+      "structure_index": 3,
+      "complexity": "medium",
+      "minimum_placements_from_empty": 15,
+      "target_cell_layers": 23,
+      "original": 0.4982293605482011,
+      "fixed-1": 0.7690883995231821,
+      "fixed-2": 0.7832988267770876,
+      "fixed-3": 0.7832988267770876
+    },
+    {
+      "structure_index": 4,
+      "complexity": "medium",
+      "minimum_placements_from_empty": 16,
+      "target_cell_layers": 23,
+      "original": 0.7019323671497584,
+      "fixed-1": 0.7019323671497584,
+      "fixed-2": 0.7019323671497584,
+      "fixed-3": 0.7019323671497584
+    },
+    {
+      "structure_index": 5,
+      "complexity": "complex",
+      "minimum_placements_from_empty": 19,
+      "target_cell_layers": 25,
+      "original": 0.8442592592592592,
+      "fixed-1": 0.6387654320987655,
+      "fixed-2": 0.8442592592592592,
+      "fixed-3": 0.635432098765432
+    },
+    {
+      "structure_index": 6,
+      "complexity": "medium",
+      "minimum_placements_from_empty": 17,
+      "target_cell_layers": 24,
+      "original": 0.7106782106782107,
+      "fixed-1": 0.7857142857142857,
+      "fixed-2": 0.7857142857142857,
+      "fixed-3": 0.7857142857142857
+    },
+    {
+      "structure_index": 7,
+      "complexity": "simple",
+      "minimum_placements_from_empty": 16,
+      "target_cell_layers": 22,
+      "original": 0.954625621292288,
+      "fixed-1": 0.977312810646144,
+      "fixed-2": 0.7720859387526054,
+      "fixed-3": 0.9949494949494949
+    },
+    {
+      "structure_index": 8,
+      "complexity": "simple",
+      "minimum_placements_from_empty": 14,
+      "target_cell_layers": 21,
+      "original": 0.42244500139236985,
+      "fixed-1": 0.8908289241622575,
+      "fixed-2": 0.7581917757356353,
+      "fixed-3": 1.0
+    },
+    {
+      "structure_index": 9,
+      "complexity": "complex",
+      "minimum_placements_from_empty": 19,
+      "target_cell_layers": 25,
+      "original": 0.8119865319865319,
+      "fixed-1": 0.8119865319865319,
+      "fixed-2": 0.8119865319865319,
+      "fixed-3": 0.8119865319865319
+    },
+    {
+      "structure_index": 10,
+      "complexity": "simple",
+      "minimum_placements_from_empty": 16,
+      "target_cell_layers": 22,
+      "original": 0.8322109988776656,
+      "fixed-1": 1.0,
+      "fixed-2": 1.0,
+      "fixed-3": 0.8607182940516274
+    },
+    {
+      "structure_index": 11,
+      "complexity": "simple",
+      "minimum_placements_from_empty": 16,
+      "target_cell_layers": 22,
+      "original": 0.576936026936027,
+      "fixed-1": 0.576936026936027,
+      "fixed-2": 0.5127304793971461,
+      "fixed-3": 0.576936026936027
+    },
+    {
+      "structure_index": 12,
+      "complexity": "complex",
+      "minimum_placements_from_empty": 17,
+      "target_cell_layers": 25,
+      "original": 0.33240740740740743,
+      "fixed-1": 0.3020987654320988,
+      "fixed-2": 0.33240740740740743,
+      "fixed-3": 0.33240740740740743
+    },
+    {
+      "structure_index": 13,
+      "complexity": "medium",
+      "minimum_placements_from_empty": 18,
+      "target_cell_layers": 24,
+      "original": 0.5964170692431562,
+      "fixed-1": 0.5964170692431562,
+      "fixed-2": 0.5964170692431562,
+      "fixed-3": 0.5746108427267848
+    },
+    {
+      "structure_index": 14,
+      "complexity": "simple",
+      "minimum_placements_from_empty": 14,
+      "target_cell_layers": 21,
+      "original": 1.0,
+      "fixed-1": 1.0,
+      "fixed-2": 1.0,
+      "fixed-3": 1.0
+    },
+    {
+      "structure_index": 15,
+      "complexity": "medium",
+      "minimum_placements_from_empty": 17,
+      "target_cell_layers": 24,
+      "original": 0.45169082125603865,
+      "fixed-1": 0.45169082125603865,
+      "fixed-2": 0.45169082125603865,
+      "fixed-3": 0.45169082125603865
+    },
+    {
+      "structure_index": 16,
+      "complexity": "simple",
+      "minimum_placements_from_empty": 15,
+      "target_cell_layers": 22,
+      "original": 1.0,
+      "fixed-1": 0.8404926457558036,
+      "fixed-2": 0.7475160966389036,
+      "fixed-3": 0.95351172544155
+    },
+    {
+      "structure_index": 17,
+      "complexity": "complex",
+      "minimum_placements_from_empty": 18,
+      "target_cell_layers": 25,
+      "original": 0.5796296296296296,
+      "fixed-1": 0.5796296296296296,
+      "fixed-2": 0.5796296296296296,
+      "fixed-3": 0.5446913580246914
+    },
+    {
+      "structure_index": 18,
+      "complexity": "simple",
+      "minimum_placements_from_empty": 17,
+      "target_cell_layers": 21,
+      "original": 1.0,
+      "fixed-1": 0.9708994708994709,
+      "fixed-2": 1.0,
+      "fixed-3": 1.0
+    },
+    {
+      "structure_index": 19,
+      "complexity": "medium",
+      "minimum_placements_from_empty": 20,
+      "target_cell_layers": 24,
+      "original": 0.7112085769980506,
+      "fixed-1": 0.7763970110461338,
+      "fixed-2": 0.689554905782976,
+      "fixed-3": 0.7582033788174138
+    }
+  ],
+  "mechanical_oracle_diagnostics": [
+    {
+      "policy": "first-candidate",
+      "kind": "mechanical diagnostic, no LLM, no Directors; not a matched baseline",
+      "games": 20,
+      "mean_final_progress": 0.7483569920629417,
+      "completion_rate": 0.3,
+      "mean_curve": [
+        0.072948656500716,
+        0.12227415596523147,
+        0.17119833454959313,
+        0.21181353774202744,
+        0.2533093174305989,
+        0.32013217139246886,
+        0.37303027633862873,
+        0.4267217602086023,
+        0.47333911304391857,
+        0.5132412437549737,
+        0.5738048596458207,
+        0.6241462279986307,
+        0.6620282516237894,
+        0.6964395216191555,
+        0.7217913101814704,
+        0.7372719182673416,
+        0.7483569920629417,
+        0.7483569920629417,
+        0.7483569920629417,
+        0.7483569920629417
+      ],
+      "by_structure": [
+        {
+          "structure_index": 0,
+          "mean_final_progress": 0.7352657004830917,
+          "completion_rate": 0
+        },
+        {
+          "structure_index": 1,
+          "mean_final_progress": 0.7185990338164251,
+          "completion_rate": 0
+        },
+        {
+          "structure_index": 2,
+          "mean_final_progress": 0.2451529790660226,
+          "completion_rate": 0
+        },
+        {
+          "structure_index": 3,
+          "mean_final_progress": 0.7832988267770876,
+          "completion_rate": 0
+        },
+        {
+          "structure_index": 4,
+          "mean_final_progress": 0.7019323671497584,
+          "completion_rate": 0
+        },
+        {
+          "structure_index": 5,
+          "mean_final_progress": 0.8442592592592592,
+          "completion_rate": 0
+        },
+        {
+          "structure_index": 6,
+          "mean_final_progress": 0.7857142857142857,
+          "completion_rate": 0
+        },
+        {
+          "structure_index": 7,
+          "mean_final_progress": 1.0,
+          "completion_rate": 1
+        },
+        {
+          "structure_index": 8,
+          "mean_final_progress": 1.0,
+          "completion_rate": 1
+        },
+        {
+          "structure_index": 9,
+          "mean_final_progress": 0.8119865319865319,
+          "completion_rate": 0
+        },
+        {
+          "structure_index": 10,
+          "mean_final_progress": 1.0,
+          "completion_rate": 1
+        },
+        {
+          "structure_index": 11,
+          "mean_final_progress": 0.576936026936027,
+          "completion_rate": 0
+        },
+        {
+          "structure_index": 12,
+          "mean_final_progress": 0.33240740740740743,
+          "completion_rate": 0
+        },
+        {
+          "structure_index": 13,
+          "mean_final_progress": 0.5964170692431562,
+          "completion_rate": 0
+        },
+        {
+          "structure_index": 14,
+          "mean_final_progress": 1.0,
+          "completion_rate": 1
+        },
+        {
+          "structure_index": 15,
+          "mean_final_progress": 0.45169082125603865,
+          "completion_rate": 0
+        },
+        {
+          "structure_index": 16,
+          "mean_final_progress": 1.0,
+          "completion_rate": 1
+        },
+        {
+          "structure_index": 17,
+          "mean_final_progress": 0.5796296296296296,
+          "completion_rate": 0
+        },
+        {
+          "structure_index": 18,
+          "mean_final_progress": 1.0,
+          "completion_rate": 1
+        },
+        {
+          "structure_index": 19,
+          "mean_final_progress": 0.8038499025341129,
+          "completion_rate": 0
+        }
+      ]
+    },
+    {
+      "policy": "uniform-candidate",
+      "kind": "mechanical diagnostic, no LLM, no Directors; not a matched baseline",
+      "games": 2000,
+      "mean_final_progress": 0.7483569920629417,
+      "completion_rate": 0.3,
+      "mean_curve": [
+        0.06657591974831677,
+        0.11036023813101044,
+        0.1532337916596498,
+        0.1968487030955738,
+        0.24241531804918534,
+        0.2892839588706065,
+        0.3373260721467701,
+        0.38830770563320904,
+        0.44081839204125817,
+        0.4907826356377329,
+        0.544288477903146,
+        0.5968091455362164,
+        0.6466168826490909,
+        0.6906112612586582,
+        0.7181019616206744,
+        0.7378608962678985,
+        0.7483569920629417,
+        0.7483569920629417,
+        0.7483569920629417,
+        0.7483569920629417
+      ],
+      "by_structure": [
+        {
+          "structure_index": 0,
+          "mean_final_progress": 0.7352657004830917,
+          "completion_rate": 0
+        },
+        {
+          "structure_index": 1,
+          "mean_final_progress": 0.7185990338164251,
+          "completion_rate": 0
+        },
+        {
+          "structure_index": 2,
+          "mean_final_progress": 0.2451529790660226,
+          "completion_rate": 0
+        },
+        {
+          "structure_index": 3,
+          "mean_final_progress": 0.7832988267770876,
+          "completion_rate": 0
+        },
+        {
+          "structure_index": 4,
+          "mean_final_progress": 0.7019323671497584,
+          "completion_rate": 0
+        },
+        {
+          "structure_index": 5,
+          "mean_final_progress": 0.8442592592592592,
+          "completion_rate": 0
+        },
+        {
+          "structure_index": 6,
+          "mean_final_progress": 0.7857142857142857,
+          "completion_rate": 0
+        },
+        {
+          "structure_index": 7,
+          "mean_final_progress": 1.0,
+          "completion_rate": 1
+        },
+        {
+          "structure_index": 8,
+          "mean_final_progress": 1.0,
+          "completion_rate": 1
+        },
+        {
+          "structure_index": 9,
+          "mean_final_progress": 0.8119865319865319,
+          "completion_rate": 0
+        },
+        {
+          "structure_index": 10,
+          "mean_final_progress": 1.0,
+          "completion_rate": 1
+        },
+        {
+          "structure_index": 11,
+          "mean_final_progress": 0.576936026936027,
+          "completion_rate": 0
+        },
+        {
+          "structure_index": 12,
+          "mean_final_progress": 0.33240740740740743,
+          "completion_rate": 0
+        },
+        {
+          "structure_index": 13,
+          "mean_final_progress": 0.5964170692431562,
+          "completion_rate": 0
+        },
+        {
+          "structure_index": 14,
+          "mean_final_progress": 1.0,
+          "completion_rate": 1
+        },
+        {
+          "structure_index": 15,
+          "mean_final_progress": 0.45169082125603865,
+          "completion_rate": 0
+        },
+        {
+          "structure_index": 16,
+          "mean_final_progress": 1.0,
+          "completion_rate": 1
+        },
+        {
+          "structure_index": 17,
+          "mean_final_progress": 0.5796296296296296,
+          "completion_rate": 0
+        },
+        {
+          "structure_index": 18,
+          "mean_final_progress": 1.0,
+          "completion_rate": 1
+        },
+        {
+          "structure_index": 19,
+          "mean_final_progress": 0.8038499025341129,
+          "completion_rate": 0
+        }
+      ]
+    }
+  ],
+  "singleton_examples": [
+    {
+      "structure_index": 0,
+      "run": 1,
+      "turn": 14,
+      "discussion": "D2: Move the orange block from (1,0) and (1,1) to (1,1) and (1,2). Then, place a green small block in the left cell of the top layer.",
+      "oracle": [
+        {
+          "action": "place",
+          "block": "bs",
+          "position": "(2,2)",
+          "layer": 2,
+          "span_to": null
+        }
+      ],
+      "builder": "[PLACE:bs:(2,2):2:CONFIRM:Placing blue small block at the bottom-right of D3's side as requested]"
+    },
+    {
+      "structure_index": 0,
+      "run": 2,
+      "turn": 14,
+      "discussion": "D3: Remove the blue blocks from the top layer and place a large blue block across the middle and right cells. Then, place a red block in the bottom left corner of the top layer.",
+      "oracle": [
+        {
+          "action": "place",
+          "block": "bs",
+          "position": "(2,2)",
+          "layer": 2,
+          "span_to": null
+        }
+      ],
+      "builder": "[PLACE:bs:(2,2):2:CONFIRM:Placing small blue block at the bottom-right of D3's side as requested]"
+    },
+    {
+      "structure_index": 0,
+      "run": 3,
+      "turn": 14,
+      "discussion": "D1: Move the blue block from (0,2) to (0,1). Then, place a large blue block across the middle and right side of the bottom layer.",
+      "oracle": [
+        {
+          "action": "place",
+          "block": "rl",
+          "position": "(1,0)",
+          "layer": 2,
+          "span_to": "(2,0)"
+        }
+      ],
+      "builder": "[PLACE:rl:(1,0):2:(2,0):CONFIRM:Placing large red block across the left and middle cells of D3's bottom layer as requested. This move aligns with D3's perspective and utilizes the available candidate move.]"
+    },
+    {
+      "structure_index": 1,
+      "run": 2,
+      "turn": 13,
+      "discussion": "D3: Remove the large red block from the middle and right side of the bottom layer and replace it with a large orange block. Then, place a blue block in the bottom left corner of the middle layer.",
+      "oracle": [
+        {
+          "action": "place",
+          "block": "gs",
+          "position": "(2,2)",
+          "layer": 1,
+          "span_to": null
+        }
+      ],
+      "builder": "[PLACE:gs:(2,2):1:CONFIRM:Placing small green block at the bottom-right of D3's side as requested. This move aligns with the available candidate moves and follows the instruction to place a block in the specified position.]"
+    },
+    {
+      "structure_index": 1,
+      "run": 2,
+      "turn": 14,
+      "discussion": "D1: Remove the green block from (0,0) and the red blocks from (0,1) and (0,2). Place a large red block across (0,1) and (0,2). Then, place a blue block in (0,0) of the middle layer.",
+      "oracle": [
+        {
+          "action": "place",
+          "block": "gs",
+          "position": "(2,2)",
+          "layer": 2,
+          "span_to": null
+        }
+      ],
+      "builder": "[PLACE:gs:(2,2):2:CONFIRM:Placing small green block at the bottom-right of D3's side as requested]"
+    }
+  ],
+  "target_rule_audit": {
+    "unreachable_structure_count": 14,
+    "unreachable_structure_indices": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      9,
+      11,
+      12,
+      13,
+      15,
+      17,
+      19
+    ],
+    "feasible_structure_indices": [
+      7,
+      8,
+      10,
+      14,
+      16,
+      18
+    ],
+    "illegal_target_spans": [
+      {
+        "structure_index": 0,
+        "illegal_spans": [
+          {
+            "layer": 0,
+            "endpoints": [
+              "(1,2)",
+              "(1,1)"
+            ]
+          },
+          {
+            "layer": 1,
+            "endpoints": [
+              "(1,1)",
+              "(1,2)"
+            ]
+          }
+        ]
+      },
+      {
+        "structure_index": 1,
+        "illegal_spans": [
+          {
+            "layer": 0,
+            "endpoints": [
+              "(1,1)",
+              "(0,1)"
+            ]
+          }
+        ]
+      },
+      {
+        "structure_index": 2,
+        "illegal_spans": [
+          {
+            "layer": 0,
+            "endpoints": [
+              "(1,1)",
+              "(0,1)"
+            ]
+          },
+          {
+            "layer": 0,
+            "endpoints": [
+              "(2,0)",
+              "(2,1)"
+            ]
+          },
+          {
+            "layer": 1,
+            "endpoints": [
+              "(2,1)",
+              "(2,2)"
+            ]
+          }
+        ]
+      },
+      {
+        "structure_index": 3,
+        "illegal_spans": [
+          {
+            "layer": 1,
+            "endpoints": [
+              "(2,1)",
+              "(2,2)"
+            ]
+          }
+        ]
+      },
+      {
+        "structure_index": 4,
+        "illegal_spans": [
+          {
+            "layer": 0,
+            "endpoints": [
+              "(2,1)",
+              "(2,0)"
+            ]
+          },
+          {
+            "layer": 1,
+            "endpoints": [
+              "(2,0)",
+              "(2,1)"
+            ]
+          }
+        ]
+      },
+      {
+        "structure_index": 5,
+        "illegal_spans": [
+          {
+            "layer": 1,
+            "endpoints": [
+              "(1,0)",
+              "(1,1)"
+            ]
+          }
+        ]
+      },
+      {
+        "structure_index": 6,
+        "illegal_spans": [
+          {
+            "layer": 1,
+            "endpoints": [
+              "(1,1)",
+              "(0,1)"
+            ]
+          }
+        ]
+      },
+      {
+        "structure_index": 9,
+        "illegal_spans": [
+          {
+            "layer": 0,
+            "endpoints": [
+              "(2,1)",
+              "(1,1)"
+            ]
+          }
+        ]
+      },
+      {
+        "structure_index": 11,
+        "illegal_spans": [
+          {
+            "layer": 0,
+            "endpoints": [
+              "(1,1)",
+              "(0,1)"
+            ]
+          }
+        ]
+      },
+      {
+        "structure_index": 12,
+        "illegal_spans": [
+          {
+            "layer": 0,
+            "endpoints": [
+              "(1,2)",
+              "(1,1)"
+            ]
+          },
+          {
+            "layer": 0,
+            "endpoints": [
+              "(2,2)",
+              "(2,1)"
+            ]
+          },
+          {
+            "layer": 1,
+            "endpoints": [
+              "(1,1)",
+              "(0,1)"
+            ]
+          },
+          {
+            "layer": 1,
+            "endpoints": [
+              "(2,0)",
+              "(2,1)"
+            ]
+          }
+        ]
+      },
+      {
+        "structure_index": 13,
+        "illegal_spans": [
+          {
+            "layer": 0,
+            "endpoints": [
+              "(2,0)",
+              "(2,1)"
+            ]
+          },
+          {
+            "layer": 0,
+            "endpoints": [
+              "(1,0)",
+              "(1,1)"
+            ]
+          }
+        ]
+      },
+      {
+        "structure_index": 15,
+        "illegal_spans": [
+          {
+            "layer": 0,
+            "endpoints": [
+              "(2,0)",
+              "(2,1)"
+            ]
+          },
+          {
+            "layer": 0,
+            "endpoints": [
+              "(1,1)",
+              "(1,2)"
+            ]
+          }
+        ]
+      },
+      {
+        "structure_index": 17,
+        "illegal_spans": [
+          {
+            "layer": 0,
+            "endpoints": [
+              "(1,2)",
+              "(1,1)"
+            ]
+          },
+          {
+            "layer": 0,
+            "endpoints": [
+              "(2,2)",
+              "(2,1)"
+            ]
+          }
+        ]
+      },
+      {
+        "structure_index": 19,
+        "illegal_spans": [
+          {
+            "layer": 0,
+            "endpoints": [
+              "(2,0)",
+              "(2,1)"
+            ]
+          },
+          {
+            "layer": 1,
+            "endpoints": [
+              "(2,0)",
+              "(2,1)"
+            ]
+          }
+        ]
+      }
+    ],
+    "reason": "Target requires a large block occupying an invisible cell, but GameState.validate_move forbids every such placement."
+  },
+  "feasible_vs_infeasible": {
+    "original": {
+      "feasible": {
+        "n_games": 18,
+        "mean_final_progress": 0.8682136035937206,
+        "completed": 12,
+        "empty_oracle_while_unfinished_turns": 7
+      },
+      "infeasible": {
+        "n_games": 42,
+        "mean_final_progress": 0.6081709267469865,
+        "completed": 0,
+        "empty_oracle_while_unfinished_turns": 268
+      }
+    },
+    "fixed-1": {
+      "feasible": {
+        "n_games": 18,
+        "mean_final_progress": 0.946588975243946,
+        "completed": 13,
+        "empty_oracle_while_unfinished_turns": 0
+      },
+      "infeasible": {
+        "n_games": 42,
+        "mean_final_progress": 0.6106281799716473,
+        "completed": 0,
+        "empty_oracle_while_unfinished_turns": 255
+      }
+    },
+    "fixed-2": {
+      "feasible": {
+        "n_games": 18,
+        "mean_final_progress": 0.879632301854524,
+        "completed": 13,
+        "empty_oracle_while_unfinished_turns": 0
+      },
+      "infeasible": {
+        "n_games": 42,
+        "mean_final_progress": 0.6231729877845166,
+        "completed": 0,
+        "empty_oracle_while_unfinished_turns": 263
+      }
+    },
+    "fixed-3": {
+      "feasible": {
+        "n_games": 18,
+        "mean_final_progress": 0.9681965857404454,
+        "completed": 15,
+        "empty_oracle_while_unfinished_turns": 0
+      },
+      "infeasible": {
+        "n_games": 42,
+        "mean_final_progress": 0.6089989503109259,
+        "completed": 0,
+        "empty_oracle_while_unfinished_turns": 228
+      }
+    }
+  }
+}
